@@ -21,7 +21,7 @@ public class DatabaseInitializer {
 		String user = "team014";
 		String password = "80019d16";
 		try(Connection con = DriverManager.getConnection(url, user, password)){
-			System.out.println("connected to team14 database?");
+			System.out.println("connected to team14 database");
 /*
 			Statement stmt2 = con.createStatement();
 			stmt2.addBatch("DROP TABLE *");
@@ -43,12 +43,97 @@ public class DatabaseInitializer {
 		}
 	
 	}
-
-	public static void InitializeDatabase(Connection con) throws Exception {
+	public static void CreateTable(Connection con, String sql) throws Exception{
 		try {
 			Statement stmt = con.createStatement();
-			stmt.addBatch("CREATE TABLE Test(testID int)");
+			stmt.executeUpdate(sql);
+			
+			
+		}
+		catch(Exception e){
+			throw e;
+		}
+		
+	}
+	public static void InitializeDatabase(Connection con) throws Exception {
+		try {
+			/*
+			CreateTable(con,
+					"CREATE TABLE Account ("
+					+ "email char(255) NOT NULL PRIMARY KEY"
+					+ ")");
+			CreateTable(con,
+					"CREATE TABLE Editor ("
+					+ "editorID int NOT NULL PRIMARY KEY,"
+					+ "email char(255) NOT NULL,"
+					+ "FOREIGN KEY Editor(email) REFERENCES Account(email)"
+					+ ")");
+			CreateTable(con,
+					"CREATE TABLE Journals ("
+					+ "issn int NOT NULL PRIMARY KEY,"
+					+ "name char(255) NOT NULL"
+					+ ")");
+			CreateTable(con,
+					"CREATE TABLE Editing ("
+					+ "editorID int NOT NULL,"
+					+ "issn int NOT NULL,"
+					+ "PRIMARY KEY (editorID,issn),"
+					+ "FOREIGN KEY Editing(editorID) REFERENCES Editor(editorID),"
+					+ "FOREIGN KEY Editing(issn) REFERENCES Journals(issn)"
+					+ ")");*/
+			
+			Statement stmt = con.createStatement();
+			stmt.addBatch(
+					"CREATE TABLE Account ("
+					+ "email char(255) NOT NULL PRIMARY KEY"
+					+ ")");
+			stmt.addBatch(
+					"CREATE TABLE Editor ("
+					+ "editorID int NOT NULL PRIMARY KEY,"
+					+ "email char(255) NOT NULL,"
+					+ "FOREIGN KEY Editor(email) REFERENCES Account(email)"
+					+ ")");
+			stmt.addBatch(
+					"CREATE TABLE Journal ("
+					+ "issn int NOT NULL PRIMARY KEY,"
+					+ "name char(255) NOT NULL"
+					+ ")");
+			stmt.addBatch(
+					"CREATE TABLE Editing ("
+					+ "editorID int NOT NULL,"
+					+ "issn int NOT NULL,"
+					+ "PRIMARY KEY (editorID,issn),"
+					+ "FOREIGN KEY Editing(editorID) REFERENCES Editor(editorID),"
+					+ "FOREIGN KEY Editing(issn) REFERENCES Journal(issn)"
+					+ ")");
+			stmt.addBatch(
+					"CREATE TABLE Volumn ("
+					+ "issn int NOT NULL,"
+					+ "volumn int NOT NULL,"
+					+ "PRIMARY KEY (issn,volumn),"
+					+ "FOREIGN KEY Volumn(issn) REFERENCES Journal(issn)"
+					+ ")");			
+			stmt.addBatch(
+					"CREATE TABLE Edition ("
+					+ "issn int NOT NULL,"
+					+ "volumn int NOT NULL,"
+					+ "number int NOT NULL,"
+					+ "PRIMARY KEY (issn,volumn,number),"
+					+ "FOREIGN KEY Edition (issn,volumn) REFERENCES Volumn (issn,volumn)"
+					+ ")");		
+			stmt.addBatch(
+					"CREATE TABLE Article ("
+					+ "issn int NOT NULL,"
+					+ "volumn int NOT NULL,"
+					+ "number int NOT NULL,"
+					+ "page_start int NOT NULL,"
+					+ "page_end int NOT NULL /*inclusive*/,"
+					+ "PRIMARY KEY (issn,volumn,number,page_start),"
+					+ "FOREIGN KEY Article (issn,volumn,number) REFERENCES Edition (issn,volumn,number)"
+					+ ")");
+			System.out.println("executeBatch");
 			stmt.executeBatch();
+			System.out.println("finish initilizing");
 			
 		}
 		catch(Exception e){
@@ -59,11 +144,14 @@ public class DatabaseInitializer {
 		try {
 			Statement stmt = con.createStatement();
 
+			stmt.addBatch("SET FOREIGN_KEY_CHECKS = 0 ");
 			ArrayList<String> tables = FindAllTables(con);
 			for(String table : tables) {
 				System.out.println("dropping table "+table);
+				//stmt.addBatch("ALTER TABLE "+table+" NOCHECK CONSTRANT all");
 				stmt.addBatch("DROP TABLE "+table);
 			}
+			stmt.addBatch("SET FOREIGN_KEY_CHECKS = 1 ");
 			stmt.executeBatch();
 			
 		}
