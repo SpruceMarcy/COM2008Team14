@@ -22,19 +22,7 @@ public class DatabaseInitializer {
 		String password = "80019d16";
 		try(Connection con = DriverManager.getConnection(url, user, password)){
 			System.out.println("connected to team14 database");
-/*
-			Statement stmt2 = con.createStatement();
-			stmt2.addBatch("DROP TABLE *");
-			stmt2.executeBatch();*/
-			// DropAllTables(con);
-			/*
-			Statement stmt2 = con.createStatement();
-			stmt2.addBatch("CREATE TABLE Test(testID int)");
-			stmt2.executeBatch();*/
-			/*
-			Statement stmt = con.createStatement();
-			ResultSet res = stmt.executeQuery("SHOW TABLES");
-			System.out.println(res);*/
+
 			DropAllTables(con);
 			
 			InitializeDatabase(con);
@@ -48,51 +36,51 @@ public class DatabaseInitializer {
 		try {
 			Statement stmt = con.createStatement();
 			stmt.addBatch(
-					"CREATE TABLE Account ("
+					"CREATE TABLE account ("
 					+ "email char(255) NOT NULL PRIMARY KEY"
 					+ ")");
 			stmt.addBatch(
-					"CREATE TABLE Editor ("
+					"CREATE TABLE editor ("
 					+ "editorID int NOT NULL PRIMARY KEY,"
 					+ "email char(255) NOT NULL,"
-					+ "FOREIGN KEY Editor(email) REFERENCES Account(email)"
+					+ "FOREIGN KEY editor(email) REFERENCES account(email)"
 					+ ")");
 			stmt.addBatch(
-					"CREATE TABLE Journal ("
+					"CREATE TABLE journal ("
 					+ "issn int NOT NULL PRIMARY KEY,"
 					+ "name char(255) NOT NULL"
 					+ ")");
 			stmt.addBatch(
-					"CREATE TABLE Editing ("
+					"CREATE TABLE editing ("
 					+ "editorID int NOT NULL,"
 					+ "issn int NOT NULL,"
 					+ "become_chief_editor BIT DEFAULT 0,"
 					+ "PRIMARY KEY (editorID,issn),"
-					+ "FOREIGN KEY Editing(editorID) REFERENCES Editor(editorID),"
-					+ "FOREIGN KEY Editing(issn) REFERENCES Journal(issn)"
+					+ "FOREIGN KEY editing(editorID) REFERENCES editor(editorID),"
+					+ "FOREIGN KEY editing(issn) REFERENCES journal(issn)"
 					+ ")");
 			stmt.addBatch(
-					"CREATE TABLE Volumn ("
+					"CREATE TABLE volumn ("
 					+ "issn int NOT NULL,"
 					+ "volumn int NOT NULL,"
 					+ "PRIMARY KEY (issn,volumn),"
-					+ "FOREIGN KEY Volumn(issn) REFERENCES Journal(issn)"
+					+ "FOREIGN KEY volumn(issn) REFERENCES journal(issn)"
 					+ ")");			
 			stmt.addBatch(
-					"CREATE TABLE Edition ("
+					"CREATE TABLE edition ("
 					+ "issn int NOT NULL,"
 					+ "volumn int NOT NULL,"
 					+ "number int NOT NULL,"
 					+ "PRIMARY KEY (issn,volumn,number),"
-					+ "FOREIGN KEY Edition (issn,volumn) REFERENCES Volumn (issn,volumn)"
+					+ "FOREIGN KEY edition (issn,volumn) REFERENCES volumn (issn,volumn)"
 					+ ")");	
 			stmt.addBatch(
-					"CREATE TABLE Work ("
+					"CREATE TABLE work ("
 					+ "workID int NOT NULL,"
 					+ "PRIMARY KEY (workID)"
 					+ ")");			
 			stmt.addBatch(
-					"CREATE TABLE Article ("
+					"CREATE TABLE article ("
 					+ "issn int NOT NULL,"
 					+ "volumn int NOT NULL,"
 					+ "number int NOT NULL,"
@@ -100,71 +88,77 @@ public class DatabaseInitializer {
 					+ "page_end int NOT NULL /*inclusive*/,"
 					+ "workID int NOT NULL,"
 					+ "PRIMARY KEY (issn,volumn,number,page_start),"
-					+ "FOREIGN KEY Article (issn,volumn,number) REFERENCES Edition (issn,volumn,number),"
-					+ "FOREIGN KEY Article (workID) REFERENCES Work (workID)"
+					+ "FOREIGN KEY article (issn,volumn,number) REFERENCES edition (issn,volumn,number),"
+					+ "FOREIGN KEY article (workID) REFERENCES work (workID)"
 					+ ")");
 			stmt.addBatch(
-					"CREATE TABLE Author ("
+					"CREATE TABLE author ("
 					+ "authorID int NOT NULL,"
 					+ "email char(255) NOT NULL,"
 					+ "PRIMARY KEY (authorID),"
-					+ "FOREIGN KEY Editor(email) REFERENCES Account(email)"
+					+ "FOREIGN KEY editor(email) REFERENCES account(email)"
 					+ ")");	
 			stmt.addBatch(
-					"CREATE TABLE Authoring ("
+					"CREATE TABLE authoring ("
 					+ "authorID int NOT NULL,"
 					+ "workID int NOT NULL,"
 					+ "PRIMARY KEY (authorID,workID),"
-					+ "FOREIGN KEY Authoring(authorID) REFERENCES Author(authorID),"
-					+ "FOREIGN KEY Authoring(workID) REFERENCES Work(workID)"
+					+ "FOREIGN KEY authoring(authorID) REFERENCES author(authorID),"
+					+ "FOREIGN KEY authoring(workID) REFERENCES work(workID)"
 					+ ")");	
 
 			stmt.addBatch(
-					"CREATE TABLE Submission ("
+					"CREATE TABLE submission ("
 					+ "workID int NOT NULL,"
 					+ "submissionID int NOT NULL,"
 					+ "PRIMARY KEY (workID,submissionID),"
-					+ "FOREIGN KEY Submission (workID) REFERENCES Work(workID)"
+					+ "FOREIGN KEY submission (workID) REFERENCES work(workID)"
 					+ ")");
 
 			stmt.addBatch(
-					"CREATE TABLE Verdict_Choice ("
+					"CREATE TABLE verdict_choice ("
 					+ "verdictID int NOT NULL,"
-					+ "verdict char NOT NULL,"
+					+ "verdict text NOT NULL,"
 					+ "PRIMARY KEY (verdictID)"
 					+ ")");	
+			stmt.addBatch(
+					"INSERT INTO verdict_choice (verdictID,verdict) "
+					+ "VALUES (1, 'Strong Accept'),"
+					+ " (2, 'Weak Accept'),"
+					+ " (3, 'Weak Reject'),"
+					+ " (4, 'Strong Reject')");	
 			// something is preventing me to use the uncommented version -Duplicate key name 'Verdict'
 			stmt.addBatch(
-					"CREATE TABLE Verdict ("
+					"CREATE TABLE verdict ("
 					+ "authorID int NOT NULL,"
 					+ "workID int NOT NULL,"
 					+ "submissionID int NOT NULL,"
-					+ "verdictID int NOT NULL REFERENCES Verdict_Choice (verdictID),"
+					+ "verdictID int NOT NULL REFERENCES verdict_choice (verdictID),"
 					//+ "verdictID int NOT NULL,"
 					+ "PRIMARY KEY (authorID,workID,submissionID),"
-					+ "FOREIGN KEY Verdict (authorID) REFERENCES Author (authorID),"
+					+ "FOREIGN KEY verdict (authorID) REFERENCES author (authorID),"
 					//+ "FOREIGN KEY Verdict (verdictID) REFERENCES Verdict_Choice (verdictID),"
-					+ "FOREIGN KEY Verdict (workID,submissionID) REFERENCES Submission(workID,submissionID)"
+					+ "FOREIGN KEY verdict (workID,submissionID) REFERENCES submission(workID,submissionID)"
 					+ ")");	
 			stmt.addBatch(
-					"CREATE TABLE Review ("
+					"CREATE TABLE review ("
 					+ "authorID int NOT NULL,"
 					+ "workID int NOT NULL,"
 					+ "submissionID int NOT NULL,"
 					+ "review char NOT NULL,"
 					+ "PRIMARY KEY (authorID,workID,submissionID),"
-					+ "FOREIGN KEY Review (authorID) REFERENCES Author (authorID),"
-					+ "FOREIGN KEY Review (workID,submissionID) REFERENCES Submission(workID,submissionID)"
+					+ "FOREIGN KEY review (authorID) REFERENCES author (authorID),"
+					+ "FOREIGN KEY review (workID,submissionID) REFERENCES submission(workID,submissionID)"
 					+ ")");	
 
 			stmt.addBatch(
-					"CREATE TABLE Response ("
+					"CREATE TABLE response ("
 					+ "authorID int NOT NULL,"
 					+ "workID int NOT NULL,"
 					+ "submissionID int NOT NULL,"
 					+ "response char NOT NULL,"
 					+ "PRIMARY KEY (authorID,workID,submissionID),"
-					+ "FOREIGN KEY Response (authorID,workID,submissionID) REFERENCES Review (authorID,workID,submissionID)"
+					+ "FOREIGN KEY response (authorID,workID,submissionID) REFERENCES review (authorID,workID,submissionID)"
 					+ ")");	
 			System.out.println("executeBatch");
 			stmt.executeBatch();
@@ -183,7 +177,6 @@ public class DatabaseInitializer {
 			ArrayList<String> tables = FindAllTables(con);
 			for(String table : tables) {
 				System.out.println("dropping table "+table);
-				//stmt.addBatch("ALTER TABLE "+table+" NOCHECK CONSTRANT all");
 				stmt.addBatch("DROP TABLE "+table);
 			}
 			stmt.addBatch("SET FOREIGN_KEY_CHECKS = 1 ");
@@ -218,7 +211,7 @@ public class DatabaseInitializer {
 			for(String table : tableNames) {
 				System.out.println(table);
 			}
-			System.out.println("  //");
+			System.out.println("//");
 		}
 		catch(Exception e){
 			throw e;
