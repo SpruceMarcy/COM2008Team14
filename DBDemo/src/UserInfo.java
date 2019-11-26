@@ -5,7 +5,12 @@ public class UserInfo {
 	public UserInfo() {
 		userIndex = -1;
 	}
-	public static void LogIn(String userName,String password) {
-		
+	public static boolean logIn(String email,String password) {
+		try {
+			return DatabaseHandler.logIn(email, password);
+		}
+		catch(Exception e){
+			return false;
+		}
 	}
 }
