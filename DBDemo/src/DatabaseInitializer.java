@@ -44,7 +44,7 @@ public class DatabaseInitializer {
 				+ "VALUES ('llai2@shef','pw')");
 		stmt.addBatch(
 				"CREATE TABLE editor ("
-				+ "editorID int NOT NULL PRIMARY KEY,"
+				+ "editorID int NOT NULL PRIMARY KEY AUTO_INCREMENT,"
 				+ "email char(255) NOT NULL,"
 				+ "FOREIGN KEY (email) REFERENCES account(email)"
 				+ ")");
@@ -96,7 +96,7 @@ public class DatabaseInitializer {
 				+ ")");
 		stmt.addBatch(
 				"CREATE TABLE author ("
-				+ "authorID int NOT NULL,"
+				+ "authorID int NOT NULL AUTO_INCREMENT,"
 				+ "email char(255) NOT NULL,"
 				+ "PRIMARY KEY (authorID),"
 				+ "FOREIGN KEY (email) REFERENCES account(email)"
