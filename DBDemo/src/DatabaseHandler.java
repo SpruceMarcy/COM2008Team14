@@ -15,14 +15,15 @@ public class DatabaseHandler {
 		signUp("test2","pw");
 		setAuthor("test2");
 		//createWork(1,new ArrayList<Integer>());
-		Integer[] a = new Integer[] {1};
-		createWork(2,Arrays.asList(a));
-		getCorrespondingAuthor(3);
+		Integer[] a = new Integer[] {2};
+		createWork(1,Arrays.asList(a));
+		getCorrespondingAuthor(1);
 	}
 	public static void Test() {
 		/**
 		 * assume the database has just been initialized, unless this won't work
 		 */
+		
 	}
 	public static void showUsers() throws Exception {
 		try(Connection con = connect()){
@@ -163,7 +164,7 @@ public class DatabaseHandler {
 			Integer correspondingAuthor = -1;
 			while(res.next()) {
 				int index = res.getInt(1);
-				System.out.println("users:"+index+", workID:"+workID);
+				System.out.println("user:"+index+", workID:"+workID);
 				correspondingAuthor = index;
 			}
 			res.close();
