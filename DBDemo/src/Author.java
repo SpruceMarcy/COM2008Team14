@@ -7,4 +7,8 @@ public class Author extends User {
 		super(name, email);
 		authorId = id;
 	}
+	
+	public int getId() {
+		return authorId;
+	}
 }

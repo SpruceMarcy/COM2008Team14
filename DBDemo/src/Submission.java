@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 
 public class Submission {
 	
@@ -14,11 +15,7 @@ public class Submission {
 	public String title;
 	public String abstract_;
 	
-	public ArrayList<> getAuthor() throws Exception {
-		return DatabaseHandler.getAuthor(workID);
-	}
-	
-	public String getTitle() {
-		DatabaseHandler.get
+	public ArrayList<Author> getAuthor() throws Exception {
+		return DatabaseHandler.getAuthor(workID); //type mismatch should be fixed - getAuthor should return a list of authors
 	}
 }
