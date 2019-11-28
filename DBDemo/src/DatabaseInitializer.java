@@ -80,7 +80,9 @@ public class DatabaseInitializer {
 		stmt.addBatch(
 				"CREATE TABLE work ("
 				+ "workID int NOT NULL AUTO_INCREMENT,"
-				+ "PRIMARY KEY (workID)"
+				+ "issn int NOT NULL,"
+				+ "PRIMARY KEY (workID),"
+				+ "FOREIGN KEY (issn) REFERENCES journal(issn)"
 				+ ")");			
 		stmt.addBatch(
 				"CREATE TABLE article ("
@@ -119,7 +121,7 @@ public class DatabaseInitializer {
 				+ "abstract text NOT NULL,"
 				+ "pdf BLOB /*NOT NULL*/,"
 				+ "PRIMARY KEY (workID,submissionID),"
-				+ "FOREIGN KEY submission (workID) REFERENCES work(workID)"
+				+ "FOREIGN KEY (workID) REFERENCES work(workID)"
 				+ ")");
 
 		stmt.addBatch(

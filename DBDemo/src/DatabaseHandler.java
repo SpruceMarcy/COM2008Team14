@@ -1,24 +1,21 @@
 import java.sql.*;
-
-import java.util.ArrayList;
 import java.util.*;
 
 
 public class DatabaseHandler {
 	public static void main(String[] args) throws Exception{
-		//System.out.println(createWork(new UserInfo(), new ArrayList<UserInfo>()));
+
 		showAllWorks();
 		showUsers();
-		//uploadSubmision(new Submission("test title","test abstract"));
 		signUp("test1","pw");
 		setAuthor("test1");
 		signUp("test2","pw");
 		setAuthor("test2");
-		//createWork(1,new ArrayList<Integer>());
+		setEditor("test1");
+		Integer[] b = new Integer[] {};
+		DatabaseHandler.createJounral(1,"name",1,Arrays.asList(b));
 		Integer[] a = new Integer[] {2};
-		createWork(1,Arrays.asList(a));
-		getCorrespondingAuthor(1);
-		ChangeCorrespondingAuthor(1, 2);
+		DatabaseHandler.createWork(1,1,Arrays.asList(a));
 	}
 	public static void Test() {
 		/**
@@ -78,11 +75,56 @@ public class DatabaseHandler {
 			return false;
 		}
 	}
-	public static int createWork(Integer correspondingAuthor, List<Integer> otherAuthor) throws Exception {
+	public static void testCreatWork(int issn) throws SQLException, Exception {
 		try(Connection con = connect()){
 			con.setAutoCommit(false); 
 			PreparedStatement pstmt = con.prepareStatement(
-					 "INSERT INTO work () VALUES ()");
+					 "INSERT INTO work (issn) VALUES (?)");
+			pstmt.setInt(1, issn);
+			pstmt.execute();
+			con.commit();
+		}
+	}
+
+	public static boolean createJounral(int issn, String name, Integer chiefEditor, List<Integer> otherEditor) {
+		try(Connection con = connect()){
+			con.setAutoCommit(false);
+			PreparedStatement pstmt = con.prepareStatement(
+					 "INSERT INTO journal (issn, name) VALUES (?,?)");
+			pstmt.setInt(1, issn);
+			pstmt.setString(2, name);
+			pstmt.execute();
+			PreparedStatement pstmt2 = con.prepareStatement(
+					 "INSERT INTO editing (editorID, issn, become_chief_editor) VALUES (?,?,?)");
+
+			for(int authorID : otherEditor) {
+				pstmt2.setInt(1, authorID);
+				pstmt2.setInt(2, issn);
+				pstmt2.setInt(3, 0);
+				pstmt2.addBatch();
+			}			
+			pstmt2.setInt(1, chiefEditor);
+			pstmt2.setInt(2, issn);
+			pstmt2.setInt(3, 1);
+			pstmt2.addBatch();
+			pstmt2.executeBatch();
+			
+			
+			con.commit();
+			System.out.println("a new jounal is created successfully");
+			return true;
+		}
+		catch(Exception e) {
+			System.out.println("create journal fail");
+			return false;
+		}
+	}
+	public static int createWork(int issn, Integer correspondingAuthor, List<Integer> otherAuthor) throws Exception {
+		try(Connection con = connect()){
+			con.setAutoCommit(false); 
+			PreparedStatement pstmt = con.prepareStatement(
+					 "INSERT INTO work (issn) VALUES (?)");
+			pstmt.setInt(1, issn);
 			pstmt.execute();
 		    Statement stmt = con.createStatement();
 		    ResultSet res = stmt.executeQuery("SELECT LAST_INSERT_ID()");
@@ -127,7 +169,19 @@ public class DatabaseHandler {
 		catch(Exception e) {
 			System.out.println("email "+ email+" not exist? ");
 			throw e;
-			//return -1;
+		}
+	}
+	public static void setEditor(String email) throws Exception {
+		try(Connection con = connect()){
+			PreparedStatement pstmt = con.prepareStatement(
+					 "INSERT INTO editor (email) VALUES (?)");
+			pstmt.setString(1, email);
+			pstmt.execute();
+			System.out.println(email+" is set to editor");
+		}
+		catch(Exception e) {
+			System.out.println("editor "+ email+" not exist? ");
+			throw e;
 		}
 	}
 	public static ArrayList<Integer> getAuthor(int workID) throws Exception {
@@ -173,7 +227,7 @@ public class DatabaseHandler {
 			return correspondingAuthor;
 		}
 	}
-	public static void ChangeCorrespondingAuthor(int workID, int newAuthor) throws Exception {
+	public static void changeCorrespondingAuthor(int workID, int newAuthor) throws Exception {
 
 		try(Connection con = connect()){
 			con.setAutoCommit(false);
@@ -207,7 +261,7 @@ public class DatabaseHandler {
 		}
 	}
 
-	public static boolean uploadSubmision(int workID, String title, String abstract_, boolean isFirstSubmission) throws Exception {
+	public static boolean createSubmision(int workID, String title, String abstract_, boolean isFirstSubmission) throws Exception {
 		try(Connection con = connect()){
 			PreparedStatement pstmt = con.prepareStatement(
 					 "INSERT INTO submission (workID, submissionID, title, abstract) VALUES (?,?,?,?)");
@@ -226,21 +280,20 @@ public class DatabaseHandler {
 		}
 	}
 	
-	public static boolean uploadSubmision(Submission submission) throws Exception {
-		return uploadSubmision(submission.workID,submission.title,submission.abstract_,true);
-	}
-
+		
 	public static boolean uploadVerdict(int workID, int submissionID, int reviewerID, int verdictID) throws Exception {
 		/**
 		 * reviewerID is the authorID who review this submission
 		 */
 		try(Connection con = connect()){
 			PreparedStatement pstmt = con.prepareStatement(
-					 "INSERT INTO verdict (authorID, workID, submissionID, verdictID) VALUES (?,?,?,?)");
+					 "INSERT INTO verdict (authorID, workID, submissionID, verdictID) VALUES (?,?,?,?)"
+					 + " ON DUPLICATE KEY UPDATE verdictID=?");
 			pstmt.setInt(1, reviewerID);
 			pstmt.setInt(2, workID);
 			pstmt.setInt(3, submissionID);
 			pstmt.setInt(4, verdictID);
+			pstmt.setInt(5, verdictID);
 			pstmt.execute();
 			System.out.println("a new verdict is created successfully");
 			return true;
@@ -251,23 +304,65 @@ public class DatabaseHandler {
 		}
 	}
 
-	public static boolean uploadReview(int workID, int submissionID, int reviewerID, String review) throws Exception {
+	public static boolean uploadReview(int workID, int submissionID, int reviewerID, String review, int verdictID) throws Exception {
+		/**
+		 * reviewerID is the authorID who review this submission
+		 */
+		try(Connection con = connect()){
+			
+			con.setAutoCommit(false);
+			
+			PreparedStatement pstmt = con.prepareStatement(
+					 "INSERT INTO review (authorID, workID, submissionID, review) VALUES (?,?,?,?)"
+					 + " ON DUPLICATE KEY UPDATE review=?");
+			pstmt.setInt(1, reviewerID);
+			pstmt.setInt(2, workID);
+			pstmt.setInt(3, submissionID);
+			pstmt.setString(4, review);
+			pstmt.setString(5, review);
+			pstmt.execute();
+			
+
+			PreparedStatement pstmt2 = con.prepareStatement(
+					 "INSERT INTO verdict (authorID, workID, submissionID, verdictID) VALUES (?,?,?,?)"
+					 + " ON DUPLICATE KEY UPDATE verdictID=?");
+			pstmt2.setInt(1, reviewerID);
+			pstmt2.setInt(2, workID);
+			pstmt2.setInt(3, submissionID);
+			pstmt2.setInt(4, verdictID);
+			pstmt2.setInt(5, verdictID);
+			pstmt2.execute();
+			System.out.println("a new verdict is created successfully");
+			
+			System.out.println("a new review is created successfully");
+			con.commit();
+			
+			return true;
+		}
+		catch(Exception e) {
+			System.out.println("create review fail");
+			return false;
+		}
+	}
+	public static boolean uploadResponse(int workID, int submissionID, int reviewerID, String response) throws Exception {
 		/**
 		 * reviewerID is the authorID who review this submission
 		 */
 		try(Connection con = connect()){
 			PreparedStatement pstmt = con.prepareStatement(
-					 "INSERT INTO review (authorID, workID, submissionID, review) VALUES (?,?,?,?)");
+					 "INSERT INTO response (authorID, workID, submissionID, response) VALUES (?,?,?,?)"
+					 + " ON DUPLICATE KEY UPDATE response=?");
 			pstmt.setInt(1, reviewerID);
 			pstmt.setInt(2, workID);
 			pstmt.setInt(3, submissionID);
-			pstmt.setString(4, review);
-			pstmt.execute();
-			System.out.println("a new review is created successfully");
+			pstmt.setString(4, response);
+			pstmt.setString(5, response);
+			pstmt.execute();																																																																																																																																																																																																																																																																																																																																																																							
+			System.out.println("a new response is created successfully");
 			return true;
 		}
 		catch(Exception e) {
-			System.out.println("create review fail");
+			System.out.println("create response fail");
 			return false;
 		}
 	}
