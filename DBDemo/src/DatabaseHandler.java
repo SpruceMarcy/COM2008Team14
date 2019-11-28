@@ -18,6 +18,7 @@ public class DatabaseHandler {
 		Integer[] a = new Integer[] {2};
 		createWork(1,Arrays.asList(a));
 		getCorrespondingAuthor(1);
+		ChangeCorrespondingAuthor(1, 2);
 	}
 	public static void Test() {
 		/**
@@ -91,12 +92,13 @@ public class DatabaseHandler {
 			}
 			PreparedStatement pstmt2 = con.prepareStatement(
 					 "INSERT INTO authoring (authorID, workID, is_corresponding_author) VALUES (?,?,?)");
+
 			for(int authorID : otherAuthor) {
 				pstmt2.setInt(1, authorID);
 				pstmt2.setInt(2, index);
 				pstmt2.setInt(3, 0);
 				pstmt2.addBatch();
-			}
+			}			
 			pstmt2.setInt(1, correspondingAuthor);
 			pstmt2.setInt(2, index);
 			pstmt2.setInt(3, 1);
@@ -171,7 +173,25 @@ public class DatabaseHandler {
 			return correspondingAuthor;
 		}
 	}
-	
+	public static void ChangeCorrespondingAuthor(int workID, int newAuthor) throws Exception {
+
+		try(Connection con = connect()){
+			con.setAutoCommit(false);
+			PreparedStatement pstmt = con.prepareStatement(
+					 "UPDATE authoring SET is_corresponding_author=0 "
+					 + "WHERE workID=? AND is_corresponding_author=1");
+			pstmt.setInt(1, workID);
+			pstmt.execute();
+
+			PreparedStatement pstmt2 = con.prepareStatement(
+					 "UPDATE authoring SET is_corresponding_author=1 "
+					 + "WHERE workID=? AND authorID=?");
+			pstmt2.setInt(1, workID);
+			pstmt2.setInt(2, newAuthor);
+			pstmt2.execute();
+			con.commit();
+		}
+	}
 	
 	
 	public static void showAllWorks() {
@@ -186,24 +206,69 @@ public class DatabaseHandler {
 		catch(Exception e) {
 		}
 	}
-	
-	
-	public static boolean uploadSubmision(Submission submission) {
+
+	public static boolean uploadSubmision(int workID, String title, String abstract_, boolean isFirstSubmission) throws Exception {
 		try(Connection con = connect()){
 			PreparedStatement pstmt = con.prepareStatement(
-					 "INSERT INTO submission (workID, submissionID, title, abstract) VALUES (?,?)");
-			pstmt.setInt(1, submission.workID);
-			pstmt.setInt(2, 2);
-			pstmt.setString(3, submission.title);
-			pstmt.setString(4, submission.abstract_);
+					 "INSERT INTO submission (workID, submissionID, title, abstract) VALUES (?,?,?,?)");
+			pstmt.setInt(1, workID);
+			int submissionID = isFirstSubmission?1:2;
+			pstmt.setInt(2, submissionID);
+			pstmt.setString(3, title);
+			pstmt.setString(4, abstract_);
 			pstmt.execute();
-			System.out.println("a new submission is created successfully");
+			System.out.println("a new submission is created successfully, workID"+workID+", submissionID"+submissionID);
 			return true;
 		}
 		catch(Exception e) {
 			System.out.println("create submission fail");
+			throw e;
+		}
+	}
+	
+	public static boolean uploadSubmision(Submission submission) throws Exception {
+		return uploadSubmision(submission.workID,submission.title,submission.abstract_,true);
+	}
+
+	public static boolean uploadVerdict(int workID, int submissionID, int reviewerID, int verdictID) throws Exception {
+		/**
+		 * reviewerID is the authorID who review this submission
+		 */
+		try(Connection con = connect()){
+			PreparedStatement pstmt = con.prepareStatement(
+					 "INSERT INTO verdict (authorID, workID, submissionID, verdictID) VALUES (?,?,?,?)");
+			pstmt.setInt(1, reviewerID);
+			pstmt.setInt(2, workID);
+			pstmt.setInt(3, submissionID);
+			pstmt.setInt(4, verdictID);
+			pstmt.execute();
+			System.out.println("a new verdict is created successfully");
+			return true;
+		}
+		catch(Exception e) {
+			System.out.println("create verdict fail");
 			return false;
 		}
 	}
 
+	public static boolean uploadReview(int workID, int submissionID, int reviewerID, String review) throws Exception {
+		/**
+		 * reviewerID is the authorID who review this submission
+		 */
+		try(Connection con = connect()){
+			PreparedStatement pstmt = con.prepareStatement(
+					 "INSERT INTO review (authorID, workID, submissionID, review) VALUES (?,?,?,?)");
+			pstmt.setInt(1, reviewerID);
+			pstmt.setInt(2, workID);
+			pstmt.setInt(3, submissionID);
+			pstmt.setString(4, review);
+			pstmt.execute();
+			System.out.println("a new review is created successfully");
+			return true;
+		}
+		catch(Exception e) {
+			System.out.println("create review fail");
+			return false;
+		}
+	}
 }
