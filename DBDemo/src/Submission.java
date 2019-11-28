@@ -13,4 +13,12 @@ public class Submission {
 	public int workID;
 	public String title;
 	public String abstract_;
+	
+	public ArrayList<> getAuthor() throws Exception {
+		return DatabaseHandler.getAuthor(workID);
+	}
+	
+	public String getTitle() {
+		DatabaseHandler.get
+	}
 }
