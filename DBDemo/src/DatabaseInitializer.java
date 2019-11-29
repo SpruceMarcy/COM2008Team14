@@ -37,11 +37,13 @@ public class DatabaseInitializer {
 		stmt.addBatch(
 				"CREATE TABLE account ("
 				+ "email char(255) NOT NULL PRIMARY KEY,"
-				+ "password char(255) NOT NULL"
+				+ "password char(255) NOT NULL,"
+				+ "first_name TEXT NOT NULL,"
+				+ "last_name TEXT NOT NULL"
 				+ ")");
 		stmt.addBatch(
-				"INSERT INTO account (email, password) "
-				+ "VALUES ('llai2@shef','pw')");
+				"INSERT INTO account (email, password, first_name, last_name) "
+				+ "VALUES ('llai2@shef','pw','Ling','Lai')");
 		stmt.addBatch(
 				"CREATE TABLE editor ("
 				+ "editorID int NOT NULL PRIMARY KEY AUTO_INCREMENT,"
@@ -76,7 +78,8 @@ public class DatabaseInitializer {
 				+ "number int NOT NULL,"
 				+ "PRIMARY KEY (issn,volumn,number),"
 				+ "FOREIGN KEY (issn,volumn) REFERENCES volumn (issn,volumn)"
-				+ ")");	
+				+ ")");
+		
 		stmt.addBatch(
 				"CREATE TABLE work ("
 				+ "workID int NOT NULL AUTO_INCREMENT,"

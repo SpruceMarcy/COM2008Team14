@@ -7,21 +7,17 @@ public class DatabaseHandler {
 
 		showAllWorks();
 		showUsers();
-		signUp("test1","pw");
+		signUp("test1","pw","first name","last");
 		setAuthor("test1");
-		signUp("test2","pw");
+		signUp("test2","pw","first name2","last2");
 		setAuthor("test2");
 		setEditor("test1");
 		Integer[] b = new Integer[] {};
 		DatabaseHandler.createJounral(1,"name",1,Arrays.asList(b));
 		Integer[] a = new Integer[] {2};
 		DatabaseHandler.createWork(1,1,Arrays.asList(a));
-	}
-	public static void Test() {
-		/**
-		 * assume the database has just been initialized, unless this won't work
-		 */
-		
+
+		System.out.println(getAuthor(1));
 	}
 	public static void showUsers() throws Exception {
 		try(Connection con = connect()){
@@ -60,12 +56,14 @@ public class DatabaseHandler {
 		}
 		return false;
 	}
-	public static boolean signUp(String email, String password) throws Exception {
+	public static boolean signUp(String email, String password, String firstName, String lastName) throws Exception {
 		try(Connection con = connect()){
 			PreparedStatement pstmt = con.prepareStatement(
-					 "INSERT INTO account (email, password) VALUES (?,?)");
+					 "INSERT INTO account (email, password, first_name, last_name) VALUES (?,?,?,?)");
 			pstmt.setString(1, email);
 			pstmt.setString(2, password);
+			pstmt.setString(3, firstName);
+			pstmt.setString(4, lastName);
 			pstmt.execute();
 			System.out.println("a new account is created successfully");
 			return true;
@@ -184,22 +182,28 @@ public class DatabaseHandler {
 			throw e;
 		}
 	}
-	public static ArrayList<Integer> getAuthor(int workID) throws Exception {
+	public static ArrayList<Author> getAuthor(int workID) throws Exception {
 		/**
 		 * return all authors related to a work
 		 * (currently not returning anything as there are no author class)
 		 */
 		try(Connection con = connect()){
-			PreparedStatement pstmt = con.prepareStatement(
-					 "SELECT authorID FROM authoring "
-					 + "WHERE workID=? ");
+			PreparedStatement pstmt = con.prepareStatement(""
+					+ "SELECT account.email, first_name, last_name,author.authorID FROM account "
+					+ "JOIN author ON account.email=author.email "
+					+ "JOIN authoring ON author.authorID = authoring.authorID "
+					+ "WHERE authoring.workID=?"
+					+ "");
 			pstmt.setInt(1, workID);
 			ResultSet res = pstmt.executeQuery();
-			ArrayList<Integer> authors = new ArrayList<Integer>();
+			ArrayList<Author> authors = new ArrayList<Author>();
 			while(res.next()) {
-				int index = res.getInt(1);
+				String email = res.getString(1);
+				String firstName = res.getString(2);
+				String lastName = res.getString(3);
+				int index = res.getInt(4);
 				System.out.println("users:"+index+",workID:"+workID);
-				authors.add(index);
+				authors.add(new Author(email,firstName,index));
 			}
 			res.close();
 			return authors;
