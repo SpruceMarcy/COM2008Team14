@@ -16,6 +16,6 @@ public class Submission {
 	public String abstract_;
 	
 	public ArrayList<Author> getAuthor() throws Exception {
-		return DatabaseHandler.getAuthor(workID); //type mismatch should be fixed - getAuthor should return a list of authors
+		return DatabaseHandler.getAuthors(workID); //type mismatch should be fixed - getAuthor should return a list of authors
 	}
 }

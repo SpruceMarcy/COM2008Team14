@@ -65,19 +65,19 @@ public class DatabaseInitializer {
 				+ "FOREIGN KEY (issn) REFERENCES journal(issn)"
 				+ ")");
 		stmt.addBatch(
-				"CREATE TABLE volumn ("
+				"CREATE TABLE volume ("
 				+ "issn int NOT NULL,"
-				+ "volumn int NOT NULL,"
-				+ "PRIMARY KEY (issn,volumn),"
+				+ "volume int NOT NULL,"
+				+ "PRIMARY KEY (issn,volume),"
 				+ "FOREIGN KEY (issn) REFERENCES journal(issn)"
 				+ ")");			
 		stmt.addBatch(
 				"CREATE TABLE edition ("
 				+ "issn int NOT NULL,"
-				+ "volumn int NOT NULL,"
+				+ "volume int NOT NULL,"
 				+ "number int NOT NULL,"
-				+ "PRIMARY KEY (issn,volumn,number),"
-				+ "FOREIGN KEY (issn,volumn) REFERENCES volumn (issn,volumn)"
+				+ "PRIMARY KEY (issn,volume,number),"
+				+ "FOREIGN KEY (issn,volume) REFERENCES volume (issn,volume)"
 				+ ")");
 		
 		stmt.addBatch(
@@ -90,13 +90,13 @@ public class DatabaseInitializer {
 		stmt.addBatch(
 				"CREATE TABLE article ("
 				+ "issn int NOT NULL,"
-				+ "volumn int NOT NULL,"
+				+ "volume int NOT NULL,"
 				+ "number int NOT NULL,"
 				+ "page_start int NOT NULL,"
 				+ "page_end int NOT NULL /*inclusive*/,"
 				+ "workID int NOT NULL,"
-				+ "PRIMARY KEY (issn,volumn,number,page_start),"
-				+ "FOREIGN KEY (issn,volumn,number) REFERENCES edition (issn,volumn,number),"
+				+ "PRIMARY KEY (issn,volume,number,page_start),"
+				+ "FOREIGN KEY (issn,volume,number) REFERENCES edition (issn,volume,number),"
 				+ "FOREIGN KEY (workID) REFERENCES work (workID)"
 				+ ")");
 		stmt.addBatch(
@@ -128,6 +128,13 @@ public class DatabaseInitializer {
 				+ ")");
 
 		stmt.addBatch(
+				"CREATE TABLE reviewer ("
+				+ "reviewerID int NOT NULL AUTO_INCREMENT,"
+				+ "email char(255) NOT NULL,"
+				+ "PRIMARY KEY (reviewerID),"
+				+ "FOREIGN KEY (email) REFERENCES account(email)"
+				+ ")");
+		stmt.addBatch(
 				"CREATE TABLE verdict_choice ("
 				+ "verdictID int NOT NULL,"
 				+ "verdict text NOT NULL,"
@@ -141,34 +148,34 @@ public class DatabaseInitializer {
 				+ " (4, 'Strong Reject')");	
 		stmt.addBatch(
 				"CREATE TABLE verdict ("
-				+ "authorID int NOT NULL,"
+				+ "reviewerID int NOT NULL,"
 				+ "workID int NOT NULL,"
 				+ "submissionID int NOT NULL,"
 				+ "verdictID int NOT NULL,"
-				+ "PRIMARY KEY (authorID,workID,submissionID),"
-				+ "FOREIGN KEY (authorID) REFERENCES author (authorID),"
+				+ "PRIMARY KEY (reviewerID,workID,submissionID),"
+				+ "FOREIGN KEY (reviewerID) REFERENCES reviewer (reviewerID),"
 				+ "FOREIGN KEY (verdictID) REFERENCES verdict_choice (verdictID),"
 				+ "FOREIGN KEY (workID,submissionID) REFERENCES submission(workID,submissionID)"
 				+ ")");	
 		stmt.addBatch(
 				"CREATE TABLE review ("
-				+ "authorID int NOT NULL,"
+				+ "reviewerID int NOT NULL,"
 				+ "workID int NOT NULL,"
 				+ "submissionID int NOT NULL,"
 				+ "review text NOT NULL,"
-				+ "PRIMARY KEY (authorID,workID,submissionID),"
-				+ "FOREIGN KEY (authorID) REFERENCES author (authorID),"
+				+ "PRIMARY KEY (reviewerID,workID,submissionID),"
+				+ "FOREIGN KEY (reviewerID) REFERENCES reviewer (reviewerID),"
 				+ "FOREIGN KEY (workID,submissionID) REFERENCES submission(workID,submissionID)"
 				+ ")");	
 
 		stmt.addBatch(
 				"CREATE TABLE response ("
-				+ "authorID int NOT NULL,"
+				+ "reviewerID int NOT NULL,"
 				+ "workID int NOT NULL,"
 				+ "submissionID int NOT NULL,"
 				+ "response text NOT NULL,"
-				+ "PRIMARY KEY (authorID,workID,submissionID),"
-				+ "FOREIGN KEY (authorID,workID,submissionID) REFERENCES review (authorID,workID,submissionID)"
+				+ "PRIMARY KEY (reviewerID,workID,submissionID),"
+				+ "FOREIGN KEY (reviewerID,workID,submissionID) REFERENCES review (reviewerID,workID,submissionID)"
 				+ ")");	
 		System.out.println("executeBatch");
 		stmt.executeBatch();
