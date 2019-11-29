@@ -28,20 +28,20 @@ class DatabaseHandlerTest {
 		System.out.println("resetting");
 		DatabaseInitializer.main(new String[0]);
 		//Aupeter is supposed to be an email address
-		DatabaseHandler.signUp("AuPeter","pw","first name","last");
+		DatabaseHandler.signUp("AuPeter","pw","mr","first name","last","uos");
 		DatabaseHandler.setAuthor("AuPeter");
-		DatabaseHandler.signUp("AuMary","pw","first name2","last2");
+		DatabaseHandler.signUp("AuMary","pw","mr","first name2","last2","uos");
 		DatabaseHandler.setAuthor("AuMary");
 
-		DatabaseHandler.signUp("AuJordon","pw","first name2","last2");
+		DatabaseHandler.signUp("AuJordon","pw","mr","first name2","last2","uos");
 		DatabaseHandler.setAuthor("AuJordon");
 		
-		DatabaseHandler.signUp("EdGordon","pw","first name","last");
+		DatabaseHandler.signUp("EdGordon","pw","mr","first name","last","uos");
 		DatabaseHandler.setEditor("EdGordon");
-		DatabaseHandler.signUp("EdTomas","pw","first name2","last2");
+		DatabaseHandler.signUp("EdTomas","pw","mr","first name2","last2","uos");
 		DatabaseHandler.setEditor("EdTomas");
 
-		DatabaseHandler.signUp("EdTom","pw","first name2","last2");
+		DatabaseHandler.signUp("EdTom","pw","mr","first name2","last2","uos");
 		DatabaseHandler.setEditor("EdTom");
 		
 		DatabaseHandler.setReviewer("AuPeter");
@@ -55,10 +55,19 @@ class DatabaseHandlerTest {
 	}
 	@Test
 	@Order(0)
-	void testSingleAccountPerEmail() throws Exception {
+	void testAccount() throws Exception {
 		try {
-			// old ac already exist
-			assertFalse(DatabaseHandler.signUp("AuMary","pw2","haha","ypo"));
+			// test signup using repeated email
+			assertFalse(DatabaseHandler.signUp("AuMary","pw2","mr","haha","ypo","uos"));
+			// test sign in using wrong pw
+			assertTrue(DatabaseHandler.logIn("AuMary", "pw"));
+			assertFalse(DatabaseHandler.logIn("AuMary", "wrong pw"));
+			
+			// test change pw then sign in using old/new pw
+			DatabaseHandler.changePassword("AuMary", "new pw");
+			assertFalse(DatabaseHandler.logIn("AuMary", "pw"));
+			assertTrue(DatabaseHandler.logIn("AuMary", "new pw"));
+			
 		}
 		finally {
 			

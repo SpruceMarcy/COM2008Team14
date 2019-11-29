@@ -38,12 +38,14 @@ public class DatabaseInitializer {
 				"CREATE TABLE account ("
 				+ "email char(255) NOT NULL PRIMARY KEY,"
 				+ "password char(255) NOT NULL,"
-				+ "first_name TEXT NOT NULL,"
-				+ "last_name TEXT NOT NULL"
+				+ "title TEXT NOT NULL,"
+				+ "forename TEXT NOT NULL,"
+				+ "surname TEXT NOT NULL,"
+				+ "affiliation TEXT NOT NULL"
 				+ ")");
 		stmt.addBatch(
-				"INSERT INTO account (email, password, first_name, last_name) "
-				+ "VALUES ('llai2@shef','pw','Ling','Lai')");
+				"INSERT INTO account (email, password, title, forename, surname, affiliation) "
+				+ "VALUES ('llai2@shef','pw','mr.','Ling','Lai','uos')");
 		stmt.addBatch(
 				"CREATE TABLE editor ("
 				+ "editorID int NOT NULL PRIMARY KEY AUTO_INCREMENT,"

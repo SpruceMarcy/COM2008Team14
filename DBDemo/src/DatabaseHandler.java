@@ -7,9 +7,9 @@ public class DatabaseHandler {
 
 		showAllWorks();
 		showUsers();
-		DatabaseHandler.signUp("test1","pw","first name","last");
+		DatabaseHandler.signUp("test1","pw","mr","first name","last","und");
 		DatabaseHandler.setAuthor("test1");
-		DatabaseHandler.signUp("test2","pw","first name2","last2");
+		DatabaseHandler.signUp("test2","pw","ms","first name2","last2","post");
 		DatabaseHandler.setAuthor("test2");
 
 		DatabaseHandler.setEditor("test1");
@@ -60,20 +60,43 @@ public class DatabaseHandler {
 		}
 		return false;
 	}
-	public static boolean signUp(String email, String password, String firstName, String lastName) throws Exception {
+	public static boolean signUp(String email, String password, String title, String firstName, String lastName, String affiliation) throws Exception {
 		try(Connection con = connect()){
 			PreparedStatement pstmt = con.prepareStatement(
-					 "INSERT INTO account (email, password, first_name, last_name) VALUES (?,?,?,?)");
+					 "INSERT INTO account (email, password, title, forename, surname, affiliation) VALUES (?,?,?,?,?,?)");
 			pstmt.setString(1, email);
 			pstmt.setString(2, password);
-			pstmt.setString(3, firstName);
-			pstmt.setString(4, lastName);
+			pstmt.setString(3, title);
+			pstmt.setString(4, firstName);
+			pstmt.setString(5, lastName);
+			pstmt.setString(6, affiliation);
 			pstmt.execute();
 			System.out.println("a new account is created successfully");
 			return true;
 		}
 		catch(Exception e) {
 			System.out.println("create account fail, maybe duplicate email");
+			return false;
+		}
+	}
+	public static boolean changePassword(String email, String newPassword) throws Exception {
+		/**
+		 * I tried to add a parameter called old password, and only update when old password match
+		 * however, it would not return whether the old password is matched so it could not return if the password
+		 * is changed. therefore, need to first check the password is matched first using signin method.
+		 */
+		try(Connection con = connect()){
+			PreparedStatement pstmt = con.prepareStatement(
+					 "UPDATE account SET password=? WHERE email=?");
+			pstmt.setString(1, newPassword);
+			pstmt.setString(2, email);
+
+			pstmt.execute();
+			System.out.println("password is changed");
+			return true;
+		}
+		catch(Exception e) {
+			System.out.println("change password fail");
 			return false;
 		}
 	}
@@ -402,7 +425,7 @@ public class DatabaseHandler {
 	public static ArrayList<Author> getAuthors(int workID) throws Exception {
 		try(Connection con = connect()){
 			PreparedStatement pstmt = con.prepareStatement(""
-					+ "SELECT account.email, first_name, last_name,author.authorID FROM account "
+					+ "SELECT account.email,title, forename, surname,affiliation,author.authorID FROM account "
 					+ "JOIN author ON account.email=author.email "
 					+ "JOIN authoring ON author.authorID = authoring.authorID "
 					+ "WHERE authoring.workID=?"
@@ -412,11 +435,13 @@ public class DatabaseHandler {
 			ArrayList<Author> authors = new ArrayList<Author>();
 			while(res.next()) {
 				String email = res.getString(1);
-				String firstName = res.getString(2);
-				String lastName = res.getString(3);
-				int index = res.getInt(4);
+				String title = res.getString(2);
+				String forename = res.getString(3);
+				String surname = res.getString(4);
+				String affiliation = res.getString(5);
+				int index = res.getInt(6);
 				System.out.println("users:"+index+",workID:"+workID);
-				authors.add(new Author(email,firstName,index));
+				authors.add(new Author(email,forename,index));
 			}
 			res.close();
 			return authors;
@@ -425,7 +450,7 @@ public class DatabaseHandler {
 	public static Author getCorrespondingAuthor(int workID) throws Exception {
 		try(Connection con = connect()){
 			PreparedStatement pstmt = con.prepareStatement(""
-					+ "SELECT account.email, first_name, last_name,author.authorID FROM account "
+					+ "SELECT account.email,title, forename, surname,affiliation,author.authorID FROM account "
 					+ "JOIN author ON account.email=author.email "
 					+ "JOIN authoring ON author.authorID = authoring.authorID "
 					+ "WHERE authoring.workID=? "
@@ -436,11 +461,13 @@ public class DatabaseHandler {
 			Author correspondingAuthor = null;
 			while(res.next()) {
 				String email = res.getString(1);
-				String firstName = res.getString(2);
-				String lastName = res.getString(3);
-				int index = res.getInt(4);
+				String title = res.getString(2);
+				String forename = res.getString(3);
+				String surname = res.getString(4);
+				String affiliation = res.getString(5);
+				int index = res.getInt(6);
 				System.out.println("user:"+index+", workID:"+workID);
-				correspondingAuthor = new Author(email,firstName,index);
+				correspondingAuthor = new Author(email,forename,index);
 			}
 			res.close();
 			return correspondingAuthor;
@@ -633,7 +660,7 @@ public class DatabaseHandler {
 	public static ArrayList<Integer> getEditors(int issn) throws Exception {
 		try(Connection con = connect()){
 			PreparedStatement pstmt = con.prepareStatement(""
-					+ "SELECT account.email, first_name, last_name,editor.editorID FROM account "
+					+ "SELECT account.email, title, forename, surname, affiliation, editor.editorID FROM account "
 					+ "JOIN editor ON account.email=editor.email "
 					+ "JOIN editing ON editor.editorID = editing.editorID "
 					+ "WHERE editing.issn=?"
@@ -643,9 +670,11 @@ public class DatabaseHandler {
 			ArrayList<Integer> editors = new ArrayList<Integer>();
 			while(res.next()) {
 				String email = res.getString(1);
-				String firstName = res.getString(2);
-				String lastName = res.getString(3);
-				int index = res.getInt(4);
+				String title = res.getString(2);
+				String forename = res.getString(3);
+				String surname = res.getString(4);
+				String affiliation = res.getString(5);
+				int index = res.getInt(6);
 				System.out.println("editors:"+index+",issn:"+issn);
 				editors.add(index);
 			}
@@ -656,7 +685,7 @@ public class DatabaseHandler {
 	public static int getChiefEditor(int issn) throws Exception {
 		try(Connection con = connect()){
 			PreparedStatement pstmt = con.prepareStatement(""
-					+ "SELECT account.email, first_name, last_name,editor.editorID FROM account "
+					+ "SELECT account.email, title, forename, surname, affiliation, editor.editorID FROM account "
 					+ "JOIN editor ON account.email=editor.email "
 					+ "JOIN editing ON editor.editorID = editing.editorID "
 					+ "WHERE editing.issn=? "
@@ -667,9 +696,11 @@ public class DatabaseHandler {
 			int chiefEditor = -1;
 			while(res.next()) {
 				String email = res.getString(1);
-				String firstName = res.getString(2);
-				String lastName = res.getString(3);
-				int index = res.getInt(4);
+				String title = res.getString(2);
+				String forename = res.getString(3);
+				String surname = res.getString(4);
+				String affiliation = res.getString(5);
+				int index = res.getInt(6);
 				System.out.println("editors:"+index+",issn:"+issn);
 				chiefEditor = index;
 			}
