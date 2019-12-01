@@ -68,6 +68,12 @@ class DatabaseHandlerTest {
 			assertFalse(DatabaseHandler.logIn("AuMary", "pw"));
 			assertTrue(DatabaseHandler.logIn("AuMary", "new pw"));
 			
+			assertTrue(DatabaseHandler.isAuthor("AuMary"));
+			assertFalse(DatabaseHandler.isAuthor("EdGordon"));
+			
+
+			assertTrue(DatabaseHandler.isEditor("EdTomas"));
+			assertTrue(DatabaseHandler.isReviewer("EdTomas"));
 		}
 		finally {
 			
@@ -78,6 +84,7 @@ class DatabaseHandlerTest {
 	@Order(0)
 	void testAuthor() throws Exception {
 		try {
+			
 			List<Author> authors1 = DatabaseHandler.getAuthors(1);
 			List<Integer> ids = new ArrayList<Integer>();
 			for(Author author : authors1) {

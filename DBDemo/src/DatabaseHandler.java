@@ -380,47 +380,57 @@ public class DatabaseHandler {
 			throw e;
 		}
 	}
-	public static void setAuthor(String email) throws Exception {
-		/**
-		 * given an account email, add author function to it
-		 */
+	public static boolean isAuthor(String email) throws Exception {
+		return isRole(email, "author");
+	}
+	private static boolean isRole(String email, String role) throws Exception {
 		try(Connection con = connect()){
 			PreparedStatement pstmt = con.prepareStatement(
-					 "INSERT INTO author (email) VALUES (?)");
+					 "SELECT COUNT(*) FROM "+role+" WHERE email=?");
+			pstmt.setString(1, email);
+			ResultSet res = pstmt.executeQuery();
+			int count = 0;
+			while(res.next()) {
+				count = res.getInt(1);
+			}
+			res.close();
+			System.out.println("checking "+email+" is "+role);
+			return count > 0;
+			
+		}
+		catch(Exception e) {
+			System.out.println("check "+email+" is "+role+" fail");
+			throw e;
+		}
+	}
+	
+	public static boolean isEditor(String email) throws Exception {
+		return isRole(email, "editor");
+	}
+	public static boolean isReviewer(String email) throws Exception {
+		return isRole(email, "reviewer");
+	}
+	private static void setRole(String email, String role) throws Exception{
+		try(Connection con = connect()){
+			PreparedStatement pstmt = con.prepareStatement(
+					 "INSERT INTO "+role+" (email) VALUES (?)");
 			pstmt.setString(1, email);
 			pstmt.execute();
-			System.out.println(email+" is set to author");
+			System.out.println(email+" is set to "+role);
 		}
 		catch(Exception e) {
 			System.out.println("email "+ email+" not exist? ");
 			throw e;
 		}
 	}
+	public static void setAuthor(String email) throws Exception {
+		setRole(email,"author");
+	}
 	public static void setEditor(String email) throws Exception {
-		try(Connection con = connect()){
-			PreparedStatement pstmt = con.prepareStatement(
-					 "INSERT INTO editor (email) VALUES (?)");
-			pstmt.setString(1, email);
-			pstmt.execute();
-			System.out.println(email+" is set to editor");
-		}
-		catch(Exception e) {
-			System.out.println("editor "+ email+" not exist? ");
-			throw e;
-		}
+		setRole(email,"editor");
 	}
 	public static void setReviewer(String email) throws Exception {
-		try(Connection con = connect()){
-			PreparedStatement pstmt = con.prepareStatement(
-					 "INSERT INTO reviewer (email) VALUES (?)");
-			pstmt.setString(1, email);
-			pstmt.execute();
-			System.out.println(email+" is set to reviewer");
-		}
-		catch(Exception e) {
-			System.out.println("reviewer "+ email+" not exist? ");
-			throw e;
-		}
+		setRole(email,"reviewer");
 	}
 	public static ArrayList<Author> getAuthors(int workID) throws Exception {
 		try(Connection con = connect()){
