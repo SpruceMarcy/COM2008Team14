@@ -8,16 +8,17 @@ public class DatabaseHandler {
 		showAllWorks();
 		showUsers();
 		DatabaseHandler.signUp("test1","pw","mr","first name","last","und");
-		DatabaseHandler.setAuthor("test1");
+//		DatabaseHandler.setAuthor("test1");
 		DatabaseHandler.signUp("test2","pw","ms","first name2","last2","post");
-		DatabaseHandler.setAuthor("test2");
+//		DatabaseHandler.setAuthor("test2");
 
-		DatabaseHandler.setEditor("test1");
+//		DatabaseHandler.setEditor("test1");
 		DatabaseHandler.setReviewer("test1");
-		Integer[] b = new Integer[] {};
-		DatabaseHandler.createJounral(1,"name",1,Arrays.asList(b));
-		Integer[] a = new Integer[] {2};
-		DatabaseHandler.addWork(1,1,Arrays.asList(a));
+		String[] b = new String[] {};
+		DatabaseHandler.createJounral(1,"name","test1",Arrays.asList(b));
+		String[] a = new String[] {"test2"};
+		DatabaseHandler.addWork(1,"test1",Arrays.asList(a));
+		
 		
 		System.out.println(DatabaseHandler.addVerdict(1, 1, 1, 1));
 
@@ -26,24 +27,25 @@ public class DatabaseHandler {
 	public static void showUsers() throws Exception {
 		try(Connection con = connect()){
 			 Statement stmt = con.createStatement();
-			 ResultSet res = stmt.executeQuery("Select * FROM author");
+			 ResultSet res = stmt.executeQuery("Select * FROM account");
 			 while(res.next()) {
-				 int index = res.getInt(1);
-				 String email = res.getString(2);
-				 System.out.println("users:"+index+","+email);
+//				 int index = res.getInt(1);
+				 String email = res.getString(1);
+				 System.out.println("users:"+email);
 			 }
 			 res.close();
 		}
 	}
 	
 	public static Connection connect() throws Exception {
+		DriverManager.setLoginTimeout(5);
 		String url = "jdbc:mysql://stusql.dcs.shef.ac.uk/team014";
 		String user = "team014";
 		String password = "80019d16";
 		return DriverManager.getConnection(url, user, password);
 	}
 
-	public static boolean logIn(String email, String password) throws Exception {
+	public static boolean logIn(String email, String password) {
 		try(Connection con = connect()){
 			//System.out.println("SELECT * FROM account WHERE email=? AND password=?");
 			PreparedStatement pstmt = con.prepareStatement(
@@ -58,9 +60,12 @@ public class DatabaseHandler {
 			}
 			res.close();
 		}
+		catch(Exception e) {
+			
+		}
 		return false;
 	}
-	public static boolean signUp(String email, String password, String title, String firstName, String lastName, String affiliation) throws Exception {
+	public static boolean signUp(String email, String password, String title, String firstName, String lastName, String affiliation) {
 		try(Connection con = connect()){
 			PreparedStatement pstmt = con.prepareStatement(
 					 "INSERT INTO account (email, password, title, forename, surname, affiliation) VALUES (?,?,?,?,?,?)");
@@ -111,7 +116,7 @@ public class DatabaseHandler {
 		}
 	}
 
-	public static boolean createJounral(int issn, String name, Integer chiefEditor, List<Integer> otherEditor) {
+	public static boolean createJounral(int issn, String name, String chiefEditor, List<String> otherEditor) {
 		try(Connection con = connect()){
 			con.setAutoCommit(false);
 			PreparedStatement pstmt = con.prepareStatement(
@@ -120,15 +125,15 @@ public class DatabaseHandler {
 			pstmt.setString(2, name);
 			pstmt.execute();
 			PreparedStatement pstmt2 = con.prepareStatement(
-					 "INSERT INTO editing (editorID, issn, become_chief_editor) VALUES (?,?,?)");
+					 "INSERT INTO editing (email, issn, become_chief_editor) VALUES (?,?,?)");
 
-			for(int authorID : otherEditor) {
-				pstmt2.setInt(1, authorID);
+			for(String editor : otherEditor) {
+				pstmt2.setString(1, editor);
 				pstmt2.setInt(2, issn);
 				pstmt2.setInt(3, 0);
 				pstmt2.addBatch();
 			}			
-			pstmt2.setInt(1, chiefEditor);
+			pstmt2.setString(1, chiefEditor);
 			pstmt2.setInt(2, issn);
 			pstmt2.setInt(3, 1);
 			pstmt2.addBatch();
@@ -144,7 +149,7 @@ public class DatabaseHandler {
 			return false;
 		}
 	}
-	public static int addWork(int issn, Integer correspondingAuthor, List<Integer> otherAuthor) throws Exception {
+	public static int addWork(int issn, String correspondingAuthor, List<String> otherAuthor) throws Exception {
 		/**
 		 * return workID
 		 */
@@ -161,14 +166,14 @@ public class DatabaseHandler {
 				index = res.getInt(1);
 			}
 			PreparedStatement pstmt2 = con.prepareStatement(
-					 "INSERT INTO authoring (authorID, workID, is_corresponding_author) VALUES (?,?,?)");
-			for(int authorID : otherAuthor) {
-				pstmt2.setInt(1, authorID);
+					 "INSERT INTO authoring (email, workID, is_corresponding_author) VALUES (?,?,?)");
+			for(String email : otherAuthor) {
+				pstmt2.setString(1, email);
 				pstmt2.setInt(2, index);
 				pstmt2.setInt(3, 0);
 				pstmt2.addBatch();
 			}			
-			pstmt2.setInt(1, correspondingAuthor);
+			pstmt2.setString(1, correspondingAuthor);
 			pstmt2.setInt(2, index);
 			pstmt2.setInt(3, 1);
 			pstmt2.addBatch();
@@ -182,12 +187,12 @@ public class DatabaseHandler {
 			throw e;
 		}
 	}
-	public static void addAuthoring(int workID, int newAuthor) throws Exception {
+	public static void addAuthoring(int workID, String newAuthor) throws Exception {
 
 		try(Connection con = connect()){
 			PreparedStatement pstmt = con.prepareStatement(
-					 "INSERT INTO authoring (authorID, workID, is_corresponding_author) VALUES (?,?,?)");
-			pstmt.setInt(1, newAuthor);
+					 "INSERT INTO authoring (email, workID, is_corresponding_author) VALUES (?,?,?)");
+			pstmt.setString(1, newAuthor);
 			pstmt.setInt(2, workID);
 			pstmt.setInt(3, 0);
 			pstmt.execute();
@@ -198,12 +203,12 @@ public class DatabaseHandler {
 			throw e;
 		}
 	}
-	public static void removeAuthoring(int workID, int author) throws Exception {
+	public static void removeAuthoring(int workID, String author) throws Exception {
 
 		try(Connection con = connect()){
 			PreparedStatement pstmt = con.prepareStatement(
-					 "DELETE FROM authoring WHERE authorID=? AND workID=? AND is_corresponding_author=0 ");
-			pstmt.setInt(1, author);
+					 "DELETE FROM authoring WHERE email=? AND workID=? AND is_corresponding_author=0 ");
+			pstmt.setString(1, author);
 			pstmt.setInt(2, workID);
 			pstmt.execute();
 			System.out.println("an author is removed");
@@ -216,12 +221,12 @@ public class DatabaseHandler {
 		}
 	}
 
-	public static void addEditing(int issn, int newEditor) throws Exception {
+	public static void addEditing(int issn, String newEditor) throws Exception {
 
 		try(Connection con = connect()){
 			PreparedStatement pstmt = con.prepareStatement(
-					 "INSERT INTO editing (editorID, issn, become_chief_editor) VALUES (?,?,?)");
-			pstmt.setInt(1, newEditor);
+					 "INSERT INTO editing (email, issn, become_chief_editor) VALUES (?,?,?)");
+			pstmt.setString(1, newEditor);
 			pstmt.setInt(2, issn);
 			pstmt.setInt(3, 0);
 			pstmt.execute();
@@ -232,13 +237,13 @@ public class DatabaseHandler {
 			throw e;
 		}
 	}
-	public static void removeEditing(int issn, int editor) throws Exception {
+	public static void removeEditing(int issn, String editor) throws Exception {
 
 		try(Connection con = connect()){
 			PreparedStatement pstmt = con.prepareStatement(
-					 "DELETE FROM editing WHERE editorID=? AND issn=? AND become_chief_editor=0 ");
-			pstmt.setInt(1, issn);
-			pstmt.setInt(2, editor);
+					 "DELETE FROM editing WHERE email=? AND issn=? AND become_chief_editor=0 ");
+			pstmt.setString(1, editor);
+			pstmt.setInt(2, issn);
 			pstmt.execute();
 			System.out.println("an editor is removed");
 		}
@@ -380,10 +385,10 @@ public class DatabaseHandler {
 			throw e;
 		}
 	}
-	public static boolean isAuthor(String email) throws Exception {
-		return isRole(email, "author");
+	public static boolean isAuthor(String email) {
+		return isRole(email, "authoring");
 	}
-	private static boolean isRole(String email, String role) throws Exception {
+	private static boolean isRole(String email, String role) {
 		try(Connection con = connect()){
 			PreparedStatement pstmt = con.prepareStatement(
 					 "SELECT COUNT(*) FROM "+role+" WHERE email=?");
@@ -395,21 +400,35 @@ public class DatabaseHandler {
 			}
 			res.close();
 			System.out.println("checking "+email+" is "+role);
+			System.out.println(count);
 			return count > 0;
 			
 		}
 		catch(Exception e) {
 			System.out.println("check "+email+" is "+role+" fail");
-			throw e;
+		}
+		return false;
+	}
+	
+	public static boolean isEditor(String email) {
+		return isRole(email, "editing");
+	}
+	public static boolean isReviewer(String email) {
+		return isRole(email, "reviewer");
+	}
+	private static void removeRole(String email, String role) {
+		try(Connection con = connect()){
+			PreparedStatement pstmt = con.prepareStatement(
+					 "DELETE FROM "+role+" WHERE email=?");
+			pstmt.setString(1, email);
+			pstmt.execute();
+			
+		}
+		catch(Exception e) {
+			System.out.println("check "+email+" is "+role+" fail");
 		}
 	}
 	
-	public static boolean isEditor(String email) throws Exception {
-		return isRole(email, "editor");
-	}
-	public static boolean isReviewer(String email) throws Exception {
-		return isRole(email, "reviewer");
-	}
 	private static void setRole(String email, String role) throws Exception{
 		try(Connection con = connect()){
 			PreparedStatement pstmt = con.prepareStatement(
@@ -423,21 +442,20 @@ public class DatabaseHandler {
 			throw e;
 		}
 	}
-	public static void setAuthor(String email) throws Exception {
-		setRole(email,"author");
-	}
-	public static void setEditor(String email) throws Exception {
-		setRole(email,"editor");
-	}
+//	public static void setAuthor(String email) throws Exception {
+//		setRole(email,"author");
+//	}
+//	public static void setEditor(String email) throws Exception {
+//		setRole(email,"editor");
+//	}
 	public static void setReviewer(String email) throws Exception {
 		setRole(email,"reviewer");
 	}
 	public static ArrayList<Author> getAuthors(int workID) throws Exception {
 		try(Connection con = connect()){
 			PreparedStatement pstmt = con.prepareStatement(""
-					+ "SELECT account.email,title, forename, surname,affiliation,author.authorID FROM account "
-					+ "JOIN author ON account.email=author.email "
-					+ "JOIN authoring ON author.authorID = authoring.authorID "
+					+ "SELECT account.email,title, forename, surname,affiliation FROM account "
+					+ "JOIN authoring ON account.email = authoring.email "
 					+ "WHERE authoring.workID=?"
 					+ "");
 			pstmt.setInt(1, workID);
@@ -449,9 +467,9 @@ public class DatabaseHandler {
 				String forename = res.getString(3);
 				String surname = res.getString(4);
 				String affiliation = res.getString(5);
-				int index = res.getInt(6);
-				System.out.println("users:"+index+",workID:"+workID);
-				authors.add(new Author(email,forename,index));
+				System.out.println("users:"+email+",workID:"+workID);
+//				System.out.println("users:"+index+",workID:"+workID);
+				authors.add(new Author(forename,email,-1));
 			}
 			res.close();
 			return authors;
@@ -460,11 +478,10 @@ public class DatabaseHandler {
 	public static Author getCorrespondingAuthor(int workID) throws Exception {
 		try(Connection con = connect()){
 			PreparedStatement pstmt = con.prepareStatement(""
-					+ "SELECT account.email,title, forename, surname,affiliation,author.authorID FROM account "
-					+ "JOIN author ON account.email=author.email "
-					+ "JOIN authoring ON author.authorID = authoring.authorID "
+					+ "SELECT account.email,title, forename, surname,affiliation FROM account "
+					+ "JOIN authoring ON authoring.email = account.email "
 					+ "WHERE authoring.workID=? "
-					+ "AND is_corresponding_author=1"
+					+ "AND authoring.is_corresponding_author=1"
 					+ "");
 			pstmt.setInt(1, workID);
 			ResultSet res = pstmt.executeQuery();
@@ -475,15 +492,14 @@ public class DatabaseHandler {
 				String forename = res.getString(3);
 				String surname = res.getString(4);
 				String affiliation = res.getString(5);
-				int index = res.getInt(6);
-				System.out.println("user:"+index+", workID:"+workID);
-				correspondingAuthor = new Author(email,forename,index);
+				System.out.println("user:"+email+", workID:"+workID);
+				correspondingAuthor = new Author(forename,email,-1);
 			}
 			res.close();
 			return correspondingAuthor;
 		}
 	}
-	public static void changeCorrespondingAuthor(int workID, int newAuthor) throws Exception {
+	public static void changeCorrespondingAuthor(int workID, String newAuthor) throws Exception {
 
 		try(Connection con = connect()){
 			con.setAutoCommit(false);
@@ -495,9 +511,9 @@ public class DatabaseHandler {
 
 			PreparedStatement pstmt2 = con.prepareStatement(
 					 "UPDATE authoring SET is_corresponding_author=1 "
-					 + "WHERE workID=? AND authorID=?");
+					 + "WHERE workID=? AND email=?");
 			pstmt2.setInt(1, workID);
-			pstmt2.setInt(2, newAuthor);
+			pstmt2.setString(2, newAuthor);
 			pstmt2.execute();
 			con.commit();
 		}
@@ -667,59 +683,57 @@ public class DatabaseHandler {
 		}
 	}
 
-	public static ArrayList<Integer> getEditors(int issn) throws Exception {
+	public static ArrayList<String> getEditors(int issn) throws Exception {
 		try(Connection con = connect()){
 			PreparedStatement pstmt = con.prepareStatement(""
-					+ "SELECT account.email, title, forename, surname, affiliation, editor.editorID FROM account "
-					+ "JOIN editor ON account.email=editor.email "
-					+ "JOIN editing ON editor.editorID = editing.editorID "
+					+ "SELECT account.email, title, forename, surname, affiliation FROM account "
+					+ "JOIN editing ON account.email = editing.email "
 					+ "WHERE editing.issn=?"
 					+ "");
 			pstmt.setInt(1, issn);
 			ResultSet res = pstmt.executeQuery();
-			ArrayList<Integer> editors = new ArrayList<Integer>();
+			ArrayList<String> editors = new ArrayList<String>();
 			while(res.next()) {
 				String email = res.getString(1);
 				String title = res.getString(2);
 				String forename = res.getString(3);
 				String surname = res.getString(4);
 				String affiliation = res.getString(5);
-				int index = res.getInt(6);
-				System.out.println("editors:"+index+",issn:"+issn);
-				editors.add(index);
+				System.out.println("editors:"+email+",issn:"+issn);
+				editors.add(email);
 			}
 			res.close();
 			return editors;
 		}
 	}
-	public static int getChiefEditor(int issn) throws Exception {
+	public static String getChiefEditor(int issn) {
 		try(Connection con = connect()){
 			PreparedStatement pstmt = con.prepareStatement(""
-					+ "SELECT account.email, title, forename, surname, affiliation, editor.editorID FROM account "
-					+ "JOIN editor ON account.email=editor.email "
-					+ "JOIN editing ON editor.editorID = editing.editorID "
+					+ "SELECT account.email, title, forename, surname, affiliation FROM account "
+					+ "JOIN editing ON account.email = editing.email "
 					+ "WHERE editing.issn=? "
 					+ "AND editing.become_chief_editor=1"
 					+ "");
 			pstmt.setInt(1, issn);
 			ResultSet res = pstmt.executeQuery();
-			int chiefEditor = -1;
+			String chiefEditor = null;
 			while(res.next()) {
 				String email = res.getString(1);
 				String title = res.getString(2);
 				String forename = res.getString(3);
 				String surname = res.getString(4);
 				String affiliation = res.getString(5);
-				int index = res.getInt(6);
-				System.out.println("editors:"+index+",issn:"+issn);
-				chiefEditor = index;
+				System.out.println("editors:"+email+",issn:"+issn);
+				chiefEditor = email;
 			}
 			res.close();
 			return chiefEditor;
+		}catch(Exception e) {
+			
 		}
+		return "";
 	}
-	public static void changeChiefEditor(int issn, int newEditor) throws Exception {
-
+	public static void changeChiefEditor(int issn, String newEditor) throws Exception {
 		try(Connection con = connect()){
 			con.setAutoCommit(false);
 			PreparedStatement pstmt = con.prepareStatement(
@@ -730,11 +744,39 @@ public class DatabaseHandler {
 
 			PreparedStatement pstmt2 = con.prepareStatement(
 					 "UPDATE editing SET become_chief_editor=1 "
-					 + "WHERE issn=? AND editorID=?");
+					 + "WHERE issn=? AND email=?");
 			pstmt2.setInt(1, issn);
-			pstmt2.setInt(2, newEditor);
+			pstmt2.setString(2, newEditor);
 			pstmt2.execute();
 			con.commit();
 		}
+	}
+	public static List<Integer> getWorks(String email) {
+		try(Connection con = connect()){
+			PreparedStatement pstmt = con.prepareStatement(
+					 "SELECT workID FROM authoring WHERE email=?");
+			pstmt.setString(1, email);
+			ResultSet res = pstmt.executeQuery();
+			List<Integer> workIDs = new ArrayList<Integer>();
+			while(res.next()) workIDs.add(res.getInt(1));
+			return workIDs;
+		}
+		catch(Exception e) {
+		}
+		return new ArrayList<Integer>();
+	}
+	public static List<Integer> getJournals(String email) {
+		try(Connection con = connect()){
+			PreparedStatement pstmt = con.prepareStatement(
+					 "SELECT issn FROM editing WHERE email=?");
+			pstmt.setString(1, email);
+			ResultSet res = pstmt.executeQuery();
+			List<Integer> issns = new ArrayList<Integer>();
+			while(res.next()) issns.add(res.getInt(1));
+			return issns;
+		}
+		catch(Exception e) {
+		}
+		return new ArrayList<Integer>();
 	}
 }

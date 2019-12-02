@@ -46,12 +46,12 @@ public class DatabaseInitializer {
 		stmt.addBatch(
 				"INSERT INTO account (email, password, title, forename, surname, affiliation) "
 				+ "VALUES ('llai2@shef','pw','mr.','Ling','Lai','uos')");
-		stmt.addBatch(
-				"CREATE TABLE editor ("
-				+ "editorID int NOT NULL PRIMARY KEY AUTO_INCREMENT,"
-				+ "email char(255) NOT NULL,"
-				+ "FOREIGN KEY (email) REFERENCES account(email)"
-				+ ")");
+//		stmt.addBatch(
+//				"CREATE TABLE editor ("
+//				+ "editorID int NOT NULL PRIMARY KEY AUTO_INCREMENT,"
+//				+ "email char(255) NOT NULL,"
+//				+ "FOREIGN KEY (email) REFERENCES account(email)"
+//				+ ")");
 		stmt.addBatch(
 				"CREATE TABLE journal ("
 				+ "issn int NOT NULL PRIMARY KEY,"
@@ -59,11 +59,11 @@ public class DatabaseInitializer {
 				+ ")");
 		stmt.addBatch(
 				"CREATE TABLE editing ("
-				+ "editorID int NOT NULL,"
+				+ "email char(255) NOT NULL,"
 				+ "issn int NOT NULL,"
 				+ "become_chief_editor BIT DEFAULT 0,"
-				+ "PRIMARY KEY (editorID,issn),"
-				+ "FOREIGN KEY (editorID) REFERENCES editor(editorID),"
+				+ "PRIMARY KEY (email,issn),"
+				+ "FOREIGN KEY (email) REFERENCES account(email),"
 				+ "FOREIGN KEY (issn) REFERENCES journal(issn)"
 				+ ")");
 		stmt.addBatch(
@@ -101,20 +101,20 @@ public class DatabaseInitializer {
 				+ "FOREIGN KEY (issn,volume,number) REFERENCES edition (issn,volume,number),"
 				+ "FOREIGN KEY (workID) REFERENCES work (workID)"
 				+ ")");
-		stmt.addBatch(
-				"CREATE TABLE author ("
-				+ "authorID int NOT NULL AUTO_INCREMENT,"
-				+ "email char(255) NOT NULL,"
-				+ "PRIMARY KEY (authorID),"
-				+ "FOREIGN KEY (email) REFERENCES account(email)"
-				+ ")");	
+//		stmt.addBatch(
+//				"CREATE TABLE author ("
+//				+ "authorID int NOT NULL AUTO_INCREMENT,"
+//				+ "email char(255) NOT NULL,"
+//				+ "PRIMARY KEY (authorID),"
+//				+ "FOREIGN KEY (email) REFERENCES account(email)"
+//				+ ")");	
 		stmt.addBatch(
 				"CREATE TABLE authoring ("
-				+ "authorID int NOT NULL,"
+				+ "email char(255) NOT NULL,"
 				+ "workID int NOT NULL,"
 				+ "is_corresponding_author BIT DEFAULT 0,"
-				+ "PRIMARY KEY (authorID,workID),"
-				+ "FOREIGN KEY (authorID) REFERENCES author(authorID),"
+				+ "PRIMARY KEY (email,workID),"
+				+ "FOREIGN KEY (email) REFERENCES account(email),"
 				+ "FOREIGN KEY (workID) REFERENCES work(workID)"
 				+ ")");	
 
@@ -133,6 +133,7 @@ public class DatabaseInitializer {
 				"CREATE TABLE reviewer ("
 				+ "reviewerID int NOT NULL AUTO_INCREMENT,"
 				+ "email char(255) NOT NULL,"
+				+ "reviewCount int NOT NULL DEFAULT 0,"
 				+ "PRIMARY KEY (reviewerID),"
 				+ "FOREIGN KEY (email) REFERENCES account(email)"
 				+ ")");
