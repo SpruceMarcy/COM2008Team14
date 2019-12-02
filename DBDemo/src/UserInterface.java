@@ -30,7 +30,7 @@ public class UserInterface{
 			//							  null,//TODO: I have no idea how the setup in DatabaseHandler.java was intended to be done
 			//							  null //This parameter is not needed at this stage.
 			//							  );
-			startProgram("Chief Editor");
+			startProgram("Editor");
 		}
 		catch(Exception e){
 			//TODO: userSetup.showSetupFailure()
@@ -50,11 +50,13 @@ public class UserInterface{
 		case "Viewer":
 			mainFrame=new ViewerFrame(screenSize.width/2,3*screenSize.height/4,UserInterface::onLogout);
 			break;
-		case "Chief Editor":
-			mainFrame=new ChiefEditorFrame(screenSize.width/2,3*screenSize.height/4,UserInterface::onLogout);
-			break;
 		case "Editor":
-			mainFrame=new EditorFrame(screenSize.width/2,3*screenSize.height/4,UserInterface::onLogout);
+			if(true) {//TODO Some check for if the user is chief editor
+				mainFrame=new ChiefEditorFrame(screenSize.width/2,3*screenSize.height/4,UserInterface::onLogout);
+			}
+			else {
+				mainFrame=new EditorFrame(screenSize.width/2,3*screenSize.height/4,UserInterface::onLogout);
+			}
 			break;
 		case "Author":
 			mainFrame=new AuthorFrame(screenSize.width/2,3*screenSize.height/4,UserInterface::onLogout);
