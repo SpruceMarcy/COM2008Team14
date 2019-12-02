@@ -29,29 +29,29 @@ class DatabaseHandlerTest {
 		DatabaseInitializer.main(new String[0]);
 		//Aupeter is supposed to be an email address
 		DatabaseHandler.signUp("AuPeter","pw","mr","first name","last","uos");
-		DatabaseHandler.setAuthor("AuPeter");
+//		DatabaseHandler.setAuthor("AuPeter");
 		DatabaseHandler.signUp("AuMary","pw","mr","first name2","last2","uos");
-		DatabaseHandler.setAuthor("AuMary");
+//		DatabaseHandler.setAuthor("AuMary");
 
 		DatabaseHandler.signUp("AuJordon","pw","mr","first name2","last2","uos");
-		DatabaseHandler.setAuthor("AuJordon");
+//		DatabaseHandler.setAuthor("AuJordon");
 		
 		DatabaseHandler.signUp("EdGordon","pw","mr","first name","last","uos");
-		DatabaseHandler.setEditor("EdGordon");
+//		DatabaseHandler.setEditor("EdGordon");
 		DatabaseHandler.signUp("EdTomas","pw","mr","first name2","last2","uos");
-		DatabaseHandler.setEditor("EdTomas");
+//		DatabaseHandler.setEditor("EdTomas");
 
 		DatabaseHandler.signUp("EdTom","pw","mr","first name2","last2","uos");
-		DatabaseHandler.setEditor("EdTom");
+//		DatabaseHandler.setEditor("EdTom");
 		
 		DatabaseHandler.setReviewer("AuPeter");
 		DatabaseHandler.setReviewer("AuMary");
 		DatabaseHandler.setReviewer("EdGordon");
 		DatabaseHandler.setReviewer("EdTomas");
-		Integer[] b = new Integer[] {2};
-		DatabaseHandler.createJounral(1,"name",1,Arrays.asList(b));
-		Integer[] a = new Integer[] {2};
-		DatabaseHandler.addWork(1,1,Arrays.asList(a));
+		String[] b = new String[] {"EdTomas"};
+		DatabaseHandler.createJounral(1,"name","EdGordon",Arrays.asList(b));
+		String[] a = new String[] {"AuMary"};
+		DatabaseHandler.addWork(1,"AuPeter",Arrays.asList(a));
 	}
 	@Test
 	@Order(0)
@@ -72,7 +72,7 @@ class DatabaseHandlerTest {
 			assertFalse(DatabaseHandler.isAuthor("EdGordon"));
 			
 
-			assertTrue(DatabaseHandler.isEditor("EdTomas"));
+			assertTrue(DatabaseHandler.isEditor("EdGordon"));
 			assertTrue(DatabaseHandler.isReviewer("EdTomas"));
 		}
 		finally {
@@ -86,33 +86,32 @@ class DatabaseHandlerTest {
 		try {
 			
 			List<Author> authors1 = DatabaseHandler.getAuthors(1);
-			List<Integer> ids = new ArrayList<Integer>();
+			List<String> emails = new ArrayList<String>();
 			for(Author author : authors1) {
-				ids.add(author.getId());
+				emails.add(author.getEmail());
 			}
-			assertThat(ids, CoreMatchers.hasItems(1,2));
-			
+			assertThat(emails, CoreMatchers.hasItems("AuPeter","AuMary"));
 			// test corresponding author
-			assertEquals(DatabaseHandler.getCorrespondingAuthor(1).getId(),1);
+			assertTrue(DatabaseHandler.getCorrespondingAuthor(1).getEmail().equals("AuPeter"));
 			// test change corresponding author
-			DatabaseHandler.changeCorrespondingAuthor(1, 2);
-			assertEquals(DatabaseHandler.getCorrespondingAuthor(1).getId(),2);
+			DatabaseHandler.changeCorrespondingAuthor(1, "AuMary");
+			assertTrue(DatabaseHandler.getCorrespondingAuthor(1).getEmail().equals("AuMary"));
 			
-			DatabaseHandler.addAuthoring(1, 3);
+			DatabaseHandler.addAuthoring(1, "AuJordon");
 			List<Author> authors2 = DatabaseHandler.getAuthors(1);
-			List<Integer> ids2 = new ArrayList<Integer>();
+			List<String> emails2 = new ArrayList<String>();
 			for(Author author : authors2) {
-				ids2.add(author.getId());
+				emails2.add(author.getEmail());
 			}
-			assertThat(ids2, CoreMatchers.hasItems(1,2,3));
+			assertThat(emails2, CoreMatchers.hasItems("AuPeter","AuMary","AuJordon"));
 			
-			DatabaseHandler.removeAuthoring(1, 1);
+			DatabaseHandler.removeAuthoring(1, "AuPeter");
 			List<Author> authors3 = DatabaseHandler.getAuthors(1);
-			List<Integer> ids3 = new ArrayList<Integer>();
+			List<String> emails3 = new ArrayList<String>();
 			for(Author author : authors3) {
-				ids3.add(author.getId());
+				emails3.add(author.getEmail());
 			}
-			assertThat(ids3, CoreMatchers.hasItems(2,3));
+			assertThat(emails3, CoreMatchers.hasItems("AuMary","AuJordon"));
 			
 		}
 		finally {
@@ -197,22 +196,22 @@ class DatabaseHandlerTest {
 	@Order(4)
 	void testGetEditor() throws Exception {
 		try {
-			List<Integer> editors = DatabaseHandler.getEditors(1);
-			assertThat(editors, CoreMatchers.hasItems(1,2));
-			Integer chiefEditor = DatabaseHandler.getChiefEditor(1);
-			assertEquals(chiefEditor,1);
+			List<String> editors = DatabaseHandler.getEditors(1);
+			assertThat(editors, CoreMatchers.hasItems("EdGordon","EdTomas"));
+			String chiefEditor = DatabaseHandler.getChiefEditor(1);
+			assertTrue(chiefEditor.equals("EdGordon"));
 			//test change editor
-			DatabaseHandler.changeChiefEditor(1, 2);
-			Integer chiefEditor2 = DatabaseHandler.getChiefEditor(1);
-			assertEquals(chiefEditor2,2);
+			DatabaseHandler.changeChiefEditor(1, "EdTomas");
+			String chiefEditor2 = DatabaseHandler.getChiefEditor(1);
+			assertTrue(chiefEditor2.equals("EdTomas"));
 			//test add editor
-			DatabaseHandler.addEditing(1, 3);
-			List<Integer> editors2 = DatabaseHandler.getEditors(1);
-			assertThat(editors2, CoreMatchers.hasItems(1,2,3));
+			DatabaseHandler.addEditing(1, "EdTom");
+			List<String> editors2 = DatabaseHandler.getEditors(1);
+			assertThat(editors2, CoreMatchers.hasItems("EdGordon","EdTomas","EdTom"));
 			//test remove editor
-			DatabaseHandler.removeEditing(1, 1);
-			List<Integer> editors3 = DatabaseHandler.getEditors(1);
-			assertThat(editors3, CoreMatchers.hasItems(2,3));
+			DatabaseHandler.removeEditing(1, "EdGorden");
+			List<String> editors3 = DatabaseHandler.getEditors(1);
+			assertThat(editors3, CoreMatchers.hasItems("EdTomas","EdTom"));
 		}
 		finally {
 			
@@ -225,8 +224,9 @@ class DatabaseHandlerTest {
 			DatabaseHandler.addVolumne(1, 1);
 			DatabaseHandler.addEdition(1, 1, 1);
 			DatabaseHandler.addArticle(1, 1, 1, 1, 5, 1);
-			Integer[] a = new Integer[] {1,3};
-			DatabaseHandler.addWork(1,2,Arrays.asList(a));
+//			Integer[] a = new Integer[] {1,3};
+			String[] a = new String[] {"AuPeter","AuJordon"};
+			DatabaseHandler.addWork(1,"AuMary",Arrays.asList(a));
 			DatabaseHandler.addArticle(1, 1, 1, 6, 8, 2);
 
 			assertThat(DatabaseHandler.getJournals(), CoreMatchers.hasItems(1));
