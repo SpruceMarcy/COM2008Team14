@@ -10,6 +10,8 @@ public class UserLoginFrame extends JFrame{
 	public String getPassword() {return loginPassword.getText();}
 	private JComboBox<String> loginRole;
 	public String getRole() {return (String) loginRole.getSelectedItem();}
+	private JComboBox<String> loginJournal;
+	public String getLoginJournal() {return (String) loginJournal.getSelectedItem();}
 	private JButton loginButton;
 	
 	private JTextField registerJournalName;
@@ -35,7 +37,8 @@ public class UserLoginFrame extends JFrame{
 		
 		loginEmailAddress=new JTextField("placeholder@example.com");
 		loginPassword=new JPasswordField("Password");
-		loginRole=new JComboBox<String>(new String[] {"Chief Editor","Editor","Author","Reviewer"});
+		loginRole=new JComboBox<String>(new String[] {"Editor","Author","Reviewer"});
+		loginJournal=new JComboBox<String>(new String[] {"Todo: list journals here"});
 		loginButton=new JButton("Log In");
 		registerJournalName=new JTextField("Untitled Journal");
 		registerISSN=new JTextField("ISSN");
@@ -52,6 +55,12 @@ public class UserLoginFrame extends JFrame{
 		loginPassword.setFont(font);
 		loginPassword.setAlignmentX(Component.CENTER_ALIGNMENT);
 		UserInterface.forceSize(loginPassword,new Dimension(256,32));
+		loginRole.setFont(font);
+		loginRole.setAlignmentX(Component.CENTER_ALIGNMENT);
+		UserInterface.forceSize(loginRole,new Dimension(256,32));
+		loginJournal.setFont(font);
+		loginJournal.setAlignmentX(Component.CENTER_ALIGNMENT);
+		UserInterface.forceSize(loginJournal,new Dimension(256,32));
 		loginButton.setFont(font);
 		loginButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 		
@@ -103,7 +112,7 @@ public class UserLoginFrame extends JFrame{
 		contentPane.add(Box.createVerticalGlue());
 		contentPane.add(containerPanel);
 		contentPane.add(Box.createVerticalGlue());
-		UserInterface.forceSize(loginPanel,new Dimension(256,300));
+		UserInterface.forceSize(loginPanel,new Dimension(256,600));
 		UserInterface.forceSize(registerPanel,new Dimension(256,600));
 		
 		loginPanel.add(Box.createVerticalGlue());
@@ -120,7 +129,11 @@ public class UserLoginFrame extends JFrame{
 		loginPanel.add(UserInterface.makeLabel("Select Role:",Component.CENTER_ALIGNMENT,font));
 		loginPanel.add(Box.createVerticalStrut(4));  
 		loginPanel.add(loginRole);
-		loginPanel.add(Box.createVerticalStrut(8)); 
+		loginPanel.add(Box.createVerticalStrut(8));
+		loginPanel.add(UserInterface.makeLabel("Select Journal:",Component.CENTER_ALIGNMENT,font));
+		loginPanel.add(Box.createVerticalStrut(4));  
+		loginPanel.add(loginJournal);
+		loginPanel.add(Box.createVerticalStrut(8));
 		loginPanel.add(loginButton);
 		loginPanel.add(Box.createVerticalGlue());
 		//loginPanel.setBackground(Color.RED);
