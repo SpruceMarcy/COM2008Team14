@@ -21,8 +21,8 @@ public class DatabaseExampleData {
 		DatabaseHandler.signUp("AuPeter","pw","mr","first name","last","uos");
 		DatabaseHandler.signUp("AuMary","pw","mr","first name2","last2","uos");
 		DatabaseHandler.signUp("AuJordon","pw","mr","first name2","last2","uos");
-		DatabaseHandler.signUp("AuDog","pw","mr","first name2","last2","uos");
-		DatabaseHandler.signUp("AuCat","pw","mr","first name2","last2","uos");
+		DatabaseHandler.signUp("AuDog","pw","mr","dog","dogg","uos");
+		DatabaseHandler.signUp("AuCat","pw","msr","cat","caatt","uos");
 		DatabaseHandler.signUp("AuTurtle","pw","mr","first name2","last2","uos");
 		DatabaseHandler.signUp("AuFish","pw","mr","first name2","last2","uos");
 

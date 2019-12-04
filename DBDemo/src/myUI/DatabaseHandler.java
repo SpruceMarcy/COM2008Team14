@@ -330,25 +330,25 @@ public class DatabaseHandler {
 			throw e;
 		}
 	}
-	public static List<Integer> getJournals() throws Exception {
+	public static List<Journal> getJournals() {
 		try(Connection con = connect()){
 			PreparedStatement pstmt = con.prepareStatement(
-					 "SELECT * FROM journal");
+					 "SELECT journal.issn,journal.name FROM journal");
 			ResultSet res = pstmt.executeQuery();
-			List<Integer> issns = new ArrayList<Integer>();
+			List<Journal> issns = new ArrayList<Journal>();
 			while(res.next()) {
 				int issn = res.getInt(1);
 				String name = res.getString(2);
-				issns.add(issn);
+				issns.add(new Journal(issn, name));
 			}
 			res.close();
 			System.out.println("returning a list of jounrals");
 			return issns;
 		}
 		catch(Exception e) {
-			System.out.println("");
-			throw e;
+			System.out.println(e);
 		}
+		return null;
 	}
 	public static List<Integer> getVolumes(int issn) {
 		try(Connection con = connect()){
@@ -370,7 +370,7 @@ public class DatabaseHandler {
 		}
 		return null;
 	}
-	public static List<Integer> getEditions(int issn, int volume) throws Exception {
+	public static List<Integer> getEditions(int issn, int volume){
 		try(Connection con = connect()){
 			PreparedStatement pstmt = con.prepareStatement(
 					 "SELECT number FROM edition WHERE edition.issn=? AND edition.volume=?");
@@ -387,32 +387,41 @@ public class DatabaseHandler {
 			return editions;
 		}
 		catch(Exception e) {
-			throw e;
+			System.out.println(e);
 		}
+		return null;
 	}
-	public static List<Integer> getArticles(int issn, int volume, int number) throws Exception {
+	public static List<Article> getArticles(int issn, int volume, int number){
 		try(Connection con = connect()){
 			PreparedStatement pstmt = con.prepareStatement(
-					 "SELECT page_start,page_end,workID FROM article "
-					 + "WHERE article.issn=? AND article.volume=? AND article.number=?");
+					 "SELECT page_start,page_end,work.workID,submission.title,"
+					 + "submission.abstract,submission.pdf FROM article,work,submission "
+					 + "WHERE article.issn=? AND article.volume=? AND article.number=? "
+					 + "AND article.workID=work.workID AND submission.workID=work.workID");
 			pstmt.setInt(1, issn);
 			pstmt.setInt(2, volume);
 			pstmt.setInt(3, number);
 			ResultSet res = pstmt.executeQuery();
-			List<Integer> articles = new ArrayList<Integer>();
+			List<Article> articles = new ArrayList<Article>();
 			while(res.next()) {
 				int pageStart = res.getInt(1);
 				int pageEnd = res.getInt(2);
 				int workID = res.getInt(3);
-				articles.add(workID);
+				String title = res.getString(4);
+				String _abstract = res.getString(5);
+				//int pdf = res.getInt(3);
+				Work work = new Work(title,_abstract,"",issn);
+				work.workID = workID;
+				articles.add(new Article(work,pageStart,pageEnd));
 			}
 			res.close();
 			System.out.println("returning list of articles");
 			return articles;
 		}
 		catch(Exception e) {
-			throw e;
+			System.out.println(e);
 		}
+		return null;
 	}
 	public static boolean isAuthor(String email) {
 		return isRole(email, "authoring");
@@ -497,8 +506,8 @@ public class DatabaseHandler {
 				String surname = res.getString(4);
 				String affiliation = res.getString(5);
 				System.out.println("users:"+email+",workID:"+workID);
-//				System.out.println("users:"+index+",workID:"+workID);
-				authors.add(new Author(forename,email,-1));
+//				System.out.println("users:"+index+",workID:"+workID);;
+				authors.add(new Author(title,forename,surname,affiliation,email,""));
 			}
 			res.close();
 			return authors;
@@ -526,7 +535,7 @@ public class DatabaseHandler {
 				String surname = res.getString(4);
 				String affiliation = res.getString(5);
 				System.out.println("user:"+email+", workID:"+workID);
-				correspondingAuthor = new Author(forename,email,-1);
+				correspondingAuthor = new Author(title,forename,surname,affiliation,email,"");
 			}
 			res.close();
 			return correspondingAuthor;

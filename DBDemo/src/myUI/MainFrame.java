@@ -79,6 +79,9 @@ public class MainFrame extends JFrame {
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.setLayout(new GridLayout(5, 1));
 		JButton readerButton = new JButton("READ article");
+		readerButton.addActionListener((event)->{
+			changePanel(createReadJournalPanel());
+		});
 		JButton logInButton = new JButton("LOG IN");
 		logInButton.addActionListener((event)->{
 			changePanel(createLogInPanel());
@@ -103,8 +106,113 @@ public class MainFrame extends JFrame {
 		buttonPanel.add(exitButton);
 		return buttonPanel;
 	}
+	public static JPanel createReadJournalPanel() {
+		List<Journal> journals = DatabaseHandler.getJournals();
+		JPanel largePanel = new JPanel();
+		largePanel.setLayout(new BoxLayout(largePanel, BoxLayout.Y_AXIS));
+		largePanel.add(new JLabel("select a journal below"));
+		JPanel journalPanel = new JPanel();
+		journalPanel.setLayout(new GridLayout(0,1));
+		largePanel.add(journalPanel);
+		for(Journal journal : journals) {
+			JButton button = new JButton(journal.name);
+			button.addActionListener((event)->{
+				changePanel(createReadVolumePanel(journal));
+			});
+			journalPanel.add(button);
+		}
+		return largePanel;
+	}
+	public static JPanel createReadVolumePanel(Journal journal) {
+		List<Integer> volumes = DatabaseHandler.getVolumes(journal.issn);
+		JPanel largePanel = new JPanel();
+		largePanel.setLayout(new BoxLayout(largePanel, BoxLayout.Y_AXIS));
+		largePanel.add(new JLabel("select a volume below"));
+		JPanel volumePanel = new JPanel();
+		volumePanel.setLayout(new GridLayout(0,1));
+		largePanel.add(volumePanel);
+		for(Integer volume : volumes) {
+			JButton button = new JButton(volume.toString());
+			button.addActionListener((event)->{
+				changePanel(createReadEditionPanel(journal, volume));
+			});
+			volumePanel.add(button);
+		}
+		return largePanel;
+	}
+
+	public static JPanel createReadEditionPanel(Journal journal, int volume) {
+		List<Integer> editions = DatabaseHandler.getEditions(journal.issn, volume);
+		JPanel largePanel = new JPanel();
+		largePanel.setLayout(new BoxLayout(largePanel, BoxLayout.Y_AXIS));
+		largePanel.add(new JLabel("select an edition below"));
+		JPanel editionPanel = new JPanel();
+		editionPanel.setLayout(new GridLayout(0,1));
+		largePanel.add(editionPanel);
+		for(Integer edition : editions) {
+			JButton button = new JButton(edition.toString());
+			button.addActionListener((event)->{
+				changePanel(createReadArticlePanel(journal, volume, edition));
+			});
+			editionPanel.add(button);
+		}
+		return largePanel;
+	}
+	public static JPanel createReadArticlePanel(Journal journal, int volume, int edition) {
+		List<Article> articles = DatabaseHandler.getArticles(journal.issn, volume, edition);
+		JPanel largePanel = new JPanel();
+		largePanel.setLayout(new BoxLayout(largePanel, BoxLayout.Y_AXIS));
+		largePanel.add(new JLabel("select an article below"));
+		JPanel articlePanel = new JPanel();
+		articlePanel.setLayout(new GridLayout(0,1));
+		largePanel.add(articlePanel);
+		for(Article article : articles) {
+			JButton button = new JButton(article.work.title);
+			button.addActionListener((event)->{
+				changePanel(createArticlePanel(article));
+			});
+			articlePanel.add(button);
+		}
+		return largePanel;
+	}
+	public static JPanel createArticlePanel(Article article) {
+		List<Author> authors = DatabaseHandler.getAuthors(article.work.workID);
+		Author corrAuthor = DatabaseHandler.getCorrespondingAuthor(article.work.workID);
+		JPanel largePanel = new JPanel();
+		largePanel.setLayout(new BoxLayout(largePanel, BoxLayout.Y_AXIS));
+		JPanel articlePanel = new JPanel();
+		articlePanel.setLayout(new GridLayout(0,2));
+		largePanel.add(articlePanel);
+		
+		articlePanel.add(new JLabel("title :"));
+		articlePanel.add(new JLabel(article.work.title));
+		articlePanel.add(new JLabel("abstract :"));
+		articlePanel.add(new JLabel(article.work._abstract));
+		articlePanel.add(new JLabel("pdf :"));
+		articlePanel.add(new JLabel("not now"));
+		articlePanel.add(new JLabel("at page :"));
+		articlePanel.add(new JLabel(""+article.pageNum));
+		articlePanel.add(new JLabel("corresponding author:"));
+		articlePanel.add(new JLabel(corrAuthor.getName()));
+		String otherAuthors = "";
+		for(Author auth : authors) {
+			if(corrAuthor.getName().equals(auth.getName())) {
+				continue;
+			}
+			otherAuthors+=auth.getName()+", ";
+		}
+		articlePanel.add(new JLabel("other author(s):"));
+		articlePanel.add(new JLabel(otherAuthors));
+		return largePanel;
+	}
+
 	public static JPanel createNewJournal() {
+		JPanel largePanel = new JPanel();
+		largePanel.setLayout(new BoxLayout(largePanel, BoxLayout.Y_AXIS));
+		largePanel.add(new JLabel("-----enter issn and journal name below(issn only accept integer):----"));
+
 		JPanel panel = new JPanel();
+		largePanel.add(panel);
 		panel.setLayout(new GridLayout(0,2));
 		panel.add(new JLabel("issn:"));
 		JTextField issnTF = new JTextField(20);
@@ -112,26 +220,29 @@ public class MainFrame extends JFrame {
 		panel.add(new JLabel("journal name:"));
 		JTextField nameTF = new JTextField(20);
 		panel.add(nameTF);
-		panel.add(new JLabel("-----enter your(editor) info below(if you aready have an account, only enter email):"));
-		panel.add(new JLabel("-----"));
-		panel.add(new JLabel("email:"));
+		largePanel.add(new JLabel("-----enter your(editor) info below(if you aready have an account, only enter email):----"));
+		//panel.add(new JLabel("-----"));
+		JPanel panelUser = new JPanel();
+		panelUser.setLayout(new GridLayout(0,2));
+		largePanel.add(panelUser);
+		panelUser.add(new JLabel("email:"));
 		JTextField emailTF = new JTextField(20);
-		panel.add(emailTF);
-		panel.add(new JLabel("password:"));
+		panelUser.add(emailTF);
+		panelUser.add(new JLabel("password:"));
 		JTextField passwordTF = new JTextField(20);
-		panel.add(passwordTF);
-		panel.add(new JLabel("title:"));
+		panelUser.add(passwordTF);
+		panelUser.add(new JLabel("title:"));
 		JTextField titleTF = new JTextField(20);
-		panel.add(titleTF);
-		panel.add(new JLabel("forename:"));
+		panelUser.add(titleTF);
+		panelUser.add(new JLabel("forename:"));
 		JTextField forenameTF = new JTextField(20);
-		panel.add(forenameTF);
-		panel.add(new JLabel("surname:"));
+		panelUser.add(forenameTF);
+		panelUser.add(new JLabel("surname:"));
 		JTextField surnameTF = new JTextField(20);
-		panel.add(surnameTF);
-		panel.add(new JLabel("affliation:"));
+		panelUser.add(surnameTF);
+		panelUser.add(new JLabel("affliation:"));
 		JTextField affiliationTF = new JTextField(20);
-		panel.add(affiliationTF);
+		panelUser.add(affiliationTF);
 		
 		JButton submit = new JButton("finish");
 		submit.addActionListener((event)->{
@@ -148,15 +259,18 @@ public class MainFrame extends JFrame {
 				boolean success = DatabaseHandler.createJounral(issn,
 						nameTF.getText(), emailTF.getText(), new ArrayList<String>());
 				if(success) {
-					changePanel(createEditorSelectionPanel(emailTF.getText()));
+					changePanel(createEditorPanel(emailTF.getText(), issn));
 					setMessage("create new journal success");
 				}else {
 					setMessage("journal with same issn already exist in database");
 				}
 		});
-		panel.add(submit);
+		JPanel submitPanel=new JPanel();
+		submitPanel.setLayout(new GridLayout(0,1));
+		largePanel.add(submitPanel);
+		submitPanel.add(submit);
 		
-		return panel;
+		return largePanel;
 	}
 	
 	public static JPanel createNewSubmissionPanel() {

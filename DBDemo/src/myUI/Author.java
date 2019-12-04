@@ -31,4 +31,8 @@ public class Author {
 	public boolean signup() {
 		return DatabaseHandler.signUp(email, password, title, forename, surname, affiliation);
 	}
+	public String getName() {
+		return title+" "+forename+" "+surname;
+	}
+
 }
