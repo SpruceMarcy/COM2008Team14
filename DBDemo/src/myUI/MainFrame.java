@@ -4,10 +4,13 @@ import java.util.*;
 import java.util.List;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
 import java.text.NumberFormat;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileSystemView;
 import javax.swing.text.NumberFormatter;
+
 public class MainFrame extends JFrame {
 // Needed for serialisation
 	private static final long serialVersionUID = 1L;
@@ -189,7 +192,7 @@ public class MainFrame extends JFrame {
 		articlePanel.add(new JLabel("abstract :"));
 		articlePanel.add(new JLabel(article.work._abstract));
 		articlePanel.add(new JLabel("pdf :"));
-		articlePanel.add(new JLabel("not now"));
+		articlePanel.add(downloadButton(article.work));
 		articlePanel.add(new JLabel("at page :"));
 		articlePanel.add(new JLabel(""+article.pageNum));
 		articlePanel.add(new JLabel("corresponding author:"));
@@ -272,6 +275,7 @@ public class MainFrame extends JFrame {
 		
 		return largePanel;
 	}
+	public static File pdf = null;
 	
 	public static JPanel createNewSubmissionPanel() {
 		JPanel panel = new JPanel();
@@ -282,20 +286,36 @@ public class MainFrame extends JFrame {
 		panel.add(new JLabel("abstract :"));
 		JTextField abstractTF = new JTextField();
 		panel.add(abstractTF);
-
+		pdf = null;
 		panel.add(new JLabel("pdf :"));
-		JTextField pdf = new JTextField();
-		panel.add(new JLabel("not support"));
+		JButton uploadButton = new JButton("choose from your desktop");
+		uploadButton.addActionListener((event)->{
+			JFileChooser pdfFC = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
+			int returnValue = pdfFC.showOpenDialog(null);
+			// int returnValue = jfc.showSaveDialog(null);
+			if (returnValue == JFileChooser.APPROVE_OPTION) {
+				File selectedFile = pdfFC.getSelectedFile();
+				System.out.println(selectedFile.getAbsolutePath());
+				uploadButton.setText(selectedFile.getName());
+				pdf = selectedFile;
+			}
+		});
+		panel.add(uploadButton);
 
 		panel.add(new JLabel("issn :"));
 		JTextField issnTF = new JTextField();
 		panel.add(issnTF);
 		JButton addAuthor = new JButton("continue to add authors");
 		addAuthor.addActionListener((event)->{
+			if(pdf==null) {
+				setMessage("please supply pdf");
+				return;
+			}
 			try {
 				Work work = new Work(titleTF.getText(),
-						abstractTF.getText(),"",Integer.parseInt(issnTF.getText()));
+						abstractTF.getText(),pdf,Integer.parseInt(issnTF.getText()));
 				changePanel(addAuthorPanel(work, true));
+				pdf = null;
 			}catch(NumberFormatException e){
 				setMessage("issn only accept integer input");
 			}
@@ -362,7 +382,7 @@ public class MainFrame extends JFrame {
 			}
 			try {
 				int workID = DatabaseHandler.addWork(work.issn, work.mainAuthor, work.authors);
-				DatabaseHandler.addSubmision(workID, work.title, work._abstract, true);
+				DatabaseHandler.addSubmision(workID, work.title, work._abstract,work.pdf, true);
 				changePanel(mainPanel());
 				if(extraMessage.equals("")) {
 					setMessage("new work is added"+extraMessage);
@@ -557,11 +577,22 @@ public class MainFrame extends JFrame {
 		JTextField abstractTF = new JTextField(work._abstract);
 		if(reviews.size()>=3 && isMainAuthor) reviewTextPanel.add(abstractTF);
 		else reviewTextPanel.add(new JLabel(work._abstract));
-
-		reviewTextPanel.add(new JLabel("pdf:"));
 		
-		reviewTextPanel.add(new JLabel("not yet"));
-
+		pdf = null;
+		reviewTextPanel.add(new JLabel("pdf:"));
+		JButton uploadButton = new JButton("choose from your desktop");
+		uploadButton.addActionListener((event)->{
+			JFileChooser pdfFC = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
+			int returnValue = pdfFC.showOpenDialog(null);
+			// int returnValue = jfc.showSaveDialog(null);
+			if (returnValue == JFileChooser.APPROVE_OPTION) {
+				File selectedFile = pdfFC.getSelectedFile();
+				System.out.println(selectedFile.getAbsolutePath());
+				uploadButton.setText(selectedFile.getName());
+				pdf = selectedFile;
+			}
+		});
+		reviewTextPanel.add(uploadButton);
 		for(Review review:reviews) {
 			reviewTextPanel.add(new JLabel("verdict"+review.reviewID+" :"));
 			reviewTextPanel.add(new JLabel(verdictIDtoVerdict(review.verdict)));
@@ -594,11 +625,12 @@ public class MainFrame extends JFrame {
 			JButton submitButton = new JButton("SUBMIT");
 			submitButton.addActionListener((event)->{
 				try {
-					DatabaseHandler.addSubmision(work.workID, titleTF.getText(), abstractTF.getText(), false);
+					DatabaseHandler.addSubmision(work.workID, titleTF.getText(), abstractTF.getText(),pdf, false);
 					for(int i=0;i<3;i++)
 						DatabaseHandler.addResponse(work.workID, 1, reviews.get(i).reviewerID, responese.get(i).getText());
 					changePanel(mainPanel());
 					setMessage("submit success");
+					pdf=null;
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -655,7 +687,7 @@ public class MainFrame extends JFrame {
 		reviewTextPanel.add(new JLabel(work._abstract));
 
 		reviewTextPanel.add(new JLabel("pdf:"));
-		reviewTextPanel.add(new JLabel("not yet"));
+		reviewTextPanel.add(downloadButton(work));
 
 		JButton sumbitButton = new JButton("SUBMIT");
 		if(work.state==1) {
@@ -733,6 +765,15 @@ public class MainFrame extends JFrame {
 		reviewPanel.add(sumbitButton, BorderLayout.SOUTH);
 		return reviewPanel;
 	}
+	private static JButton downloadButton(Work work) {
+		JButton downloadPdfButton = new JButton("download to your computer");
+		downloadPdfButton.addActionListener((event)->{
+			File file = work.getPdf();
+			setMessage("please wait, pdf is downloading to "+file.getAbsolutePath());
+		});
+		return downloadPdfButton;
+	}
+	
 	public static JPanel createEditorSelectionPanel(String email) {
 		/**
 		 * select which journal to work on
@@ -920,7 +961,7 @@ public class MainFrame extends JFrame {
 		workDetailPanel.add(new JLabel("Abstract:"));
 		workDetailPanel.add(new JLabel(work._abstract));
 		workDetailPanel.add(new JLabel("pdf:"));
-		workDetailPanel.add(new JLabel("not yet"));
+		workDetailPanel.add(downloadButton(work));
 		for(Review r : reviews) {
 			workDetailPanel.add(new JLabel("review"+r.reviewID+" :"));
 			workDetailPanel.add(new JLabel(r.review));

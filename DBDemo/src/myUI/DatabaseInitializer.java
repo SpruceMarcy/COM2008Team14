@@ -125,7 +125,7 @@ public class DatabaseInitializer {
 				+ "submissionID int NOT NULL ,"
 				+ "title char(255) NOT NULL,"
 				+ "abstract text NOT NULL,"
-				+ "pdf BLOB /*NOT NULL*/,"
+				+ "pdf LONGBLOB /*NOT NULL*/,"
 				+ "PRIMARY KEY (workID,submissionID),"
 				+ "FOREIGN KEY (workID) REFERENCES work(workID) ON DELETE CASCADE"
 				+ ")");

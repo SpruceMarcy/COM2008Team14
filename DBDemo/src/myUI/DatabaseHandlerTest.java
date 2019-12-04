@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.Assert.*;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -116,15 +117,19 @@ class DatabaseHandlerTest {
 	@Order(0)
 	void testUploadSubmission() throws Exception {
 		try {
-			boolean success = DatabaseHandler.addSubmision(1, "title1", "abstract test", true);
+			File pdf = new File("test.pdf");
+			if (!pdf.exists()) {
+				pdf.createNewFile();
+			}
+			boolean success = DatabaseHandler.addSubmision(1, "title1", "abstract test",pdf, true);
 			assertTrue(success);
-			boolean success2 = DatabaseHandler.addSubmision(1, "title update", "abstract test", false);
+			boolean success2 = DatabaseHandler.addSubmision(1, "title update", "abstract test",pdf, false);
 			assertTrue(success2);
 			
 			
 			String[] a = new String[] {};
 			DatabaseHandler.addWork(1,"AuMary",Arrays.asList(a));
-			boolean success3 = DatabaseHandler.addSubmision(2, "strongest AI", "pineapple juice", true);
+			boolean success3 = DatabaseHandler.addSubmision(2, "strongest AI", "pineapple juice",pdf, true);
 			assertTrue(success3);
 			
 			List<Work> works = DatabaseHandler.getWorksReview("AuPeter");

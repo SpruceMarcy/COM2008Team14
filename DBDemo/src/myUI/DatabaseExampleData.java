@@ -1,5 +1,6 @@
 package myUI;
 
+import java.io.File;
 import java.util.Arrays;
 
 public class DatabaseExampleData {
@@ -48,16 +49,21 @@ public class DatabaseExampleData {
 		DatabaseHandler.createJounral(24, "psy journal", "EdSam", Arrays.asList(new String[0]));
 	}
 	public static void createWork() throws Exception {
+
+		File pdf = new File("test.pdf");
+		if (!pdf.exists()) {
+			pdf.createNewFile();
+		}
 		DatabaseHandler.addWork(1, "AuPeter",  Arrays.asList( new String[] {}));
-		DatabaseHandler.addSubmision(1, "Peter life", "peter is happy", true);
+		DatabaseHandler.addSubmision(1, "Peter life", "peter is happy",pdf, true);
 		DatabaseHandler.addWork(1, "AuMary",  Arrays.asList( new String[] {}));
-		DatabaseHandler.addSubmision(2, "Mary life", "mary's abstract", true);
+		DatabaseHandler.addSubmision(2, "Mary life", "mary's abstract",pdf, true);
 		DatabaseHandler.addWork(1, "AuDog",  Arrays.asList( new String[] {"AuCat"}));
-		DatabaseHandler.addSubmision(3, "dog and cat", "we are pet", true);
+		DatabaseHandler.addSubmision(3, "dog and cat", "we are pet",pdf, true);
 		DatabaseHandler.addWork(1, "AuTurtle",  Arrays.asList( new String[] {"AuFish"}));
-		DatabaseHandler.addSubmision(4, "marine life", "we live in water", true);
+		DatabaseHandler.addSubmision(4, "marine life", "we live in water",pdf, true);
 		DatabaseHandler.addWork(1, "AuFire",  Arrays.asList( new String[] {"AuWater","AuWind"}));
-		DatabaseHandler.addSubmision(5, "elements of world", "fire water wind", true);
+		DatabaseHandler.addSubmision(5, "elements of world", "fire water wind",pdf, true);
 	}
 
 	public static void createReview() throws Exception {

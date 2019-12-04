@@ -1,5 +1,9 @@
 package myUI;
 import java.sql.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.util.*;
 
 
@@ -409,8 +413,9 @@ public class DatabaseHandler {
 				int workID = res.getInt(3);
 				String title = res.getString(4);
 				String _abstract = res.getString(5);
+				byte[] fileBytes = res.getBytes(6);
 				//int pdf = res.getInt(3);
-				Work work = new Work(title,_abstract,"",issn);
+				Work work = new Work(title,_abstract,fileBytes,issn);
 				work.workID = workID;
 				articles.add(new Article(work,pageStart,pageEnd));
 			}
@@ -581,15 +586,17 @@ public class DatabaseHandler {
 		}
 	}
 
-	public static boolean addSubmision(int workID, String title, String abstract_, boolean isFirstSubmission) throws Exception {
+	public static boolean addSubmision(int workID, String title, String abstract_,File pdf, boolean isFirstSubmission) throws Exception {
 		try(Connection con = connect()){
 			PreparedStatement pstmt = con.prepareStatement(
-					 "INSERT INTO submission (workID, submissionID, title, abstract) VALUES (?,?,?,?)");
+					 "INSERT INTO submission (workID, submissionID, title, abstract, pdf) VALUES (?,?,?,?,?)");
 			pstmt.setInt(1, workID);
 			int submissionID = isFirstSubmission?1:2;
 			pstmt.setInt(2, submissionID);
 			pstmt.setString(3, title);
 			pstmt.setString(4, abstract_);
+			FileInputStream fis = new FileInputStream(pdf);
+			pstmt.setBinaryStream(5, fis);
 			pstmt.execute();
 			System.out.println("a new submission is created successfully, workID"+workID+", submissionID"+submissionID);
 			return true;
@@ -827,19 +834,9 @@ public class DatabaseHandler {
 				int submissionID = res.getInt(3);
 				String title = res.getString(4);
 				String _abstract = res.getString(5);
-				String pdf = "";
-				
-				boolean containWork = false;
-//				for(Work work : works) {
-//					if(work.workID == workID) {
-//						if(work.state<submissionID)works.remove(work);
-//						containWork = true;
-//						break;
-//					}
-//				}
-				if(!containWork) {
-					works.add(new Work(workID, title, _abstract, pdf, submissionID));
-				}
+				byte[] fileBytes = res.getBytes(6);			
+				works.add(new Work(workID, title, _abstract, fileBytes, submissionID));
+
 			}
 			res.close();
 			return works;
@@ -865,14 +862,15 @@ public class DatabaseHandler {
 				int submissionID = res.getInt(3);
 				String title = res.getString(4);
 				String _abstract = res.getString(5);
-				String pdf = "";
-				works.add(new Work(workID, title, _abstract, pdf, submissionID));
+				byte[] fileBytes = res.getBytes(6);
+				works.add(new Work(workID, title, _abstract, fileBytes, submissionID));
 
 			}
 			res.close();
 			return works;
 		}
 		catch(Exception e) {
+			System.out.println(e);
 		}
 		return new ArrayList<Work>();
 	}
@@ -1034,15 +1032,13 @@ public class DatabaseHandler {
 				int submissionID = res.getInt(2);
 				String title = res.getString(3);
 				String _abstract = res.getString(4);
-				String pdf = "";
-				works.add(new Work(workID, title, _abstract, pdf, submissionID));
+				byte[] fileBytes = res.getBytes(5);
+				works.add(new Work(workID, title, _abstract, fileBytes, submissionID));
 
 			}
 			res.close();
 			return works;
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-//			e.printStackTrace();
 			System.out.println(e);
 		}
 		return new ArrayList<Work>();
@@ -1054,9 +1050,9 @@ public class DatabaseHandler {
 			pstmt.setInt(1, workID);
 			pstmt.execute();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-//			e.printStackTrace();
 			System.out.println(e);
 		}
 	}
+	
+	
 }
