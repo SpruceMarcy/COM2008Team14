@@ -13,8 +13,9 @@ public class MainFrame extends JFrame {
 	private static final long serialVersionUID = 1L;
 	private static Container contentPane;
 	private static JPanel extraPanel;
+	public static MainFrame instance;
 	public static void main(String[] args) {
-		new MainFrame("My Application");
+		instance = new MainFrame("My Application");
 	}
 
 	public MainFrame(String title) {
@@ -43,31 +44,7 @@ public class MainFrame extends JFrame {
 		changePanel(defaultPanel);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setVisible(true);
-	}
-	
-	
-	public static JPanel mainPanel() {
-		JPanel buttonPanel = new JPanel();
-		buttonPanel.setLayout(new GridLayout(5, 1));
-		JButton readerButton = new JButton("READ article");
-		JButton logInButton = new JButton("LOG IN");
-		JButton submitButton = new JButton("NEW SUBMISSION");
-		JButton jounalButton = new JButton("NEW JOURNAL");
-		logInButton.addActionListener((event)->{
-			changePanel(createLogInPanel());
-		});
-		JButton exitButton = new JButton("EXIT");
-
-
-		buttonPanel.add(readerButton);
-		buttonPanel.add(logInButton);
-		buttonPanel.add(submitButton);
-		buttonPanel.add(jounalButton);
-		buttonPanel.add(exitButton);
-		return buttonPanel;
-		
-	}
-		
+	}		
 	public static void changePanel(JPanel panel) {
 		contentPane.removeAll();
 		clearMessage();
@@ -98,6 +75,215 @@ public class MainFrame extends JFrame {
 		}
 		extraPanel.invalidate(); extraPanel.validate(); extraPanel.repaint();
 	}
+	public static JPanel mainPanel() {
+		JPanel buttonPanel = new JPanel();
+		buttonPanel.setLayout(new GridLayout(5, 1));
+		JButton readerButton = new JButton("READ article");
+		JButton logInButton = new JButton("LOG IN");
+		logInButton.addActionListener((event)->{
+			changePanel(createLogInPanel());
+		});
+		JButton jounalButton = new JButton("NEW JOURNAL");
+		jounalButton.addActionListener((event)->{
+			changePanel(createNewJournal());
+		});
+		JButton submitButton = new JButton("NEW SUBMISSION");
+		submitButton.addActionListener((event)->{
+			changePanel(createNewSubmissionPanel());
+		});
+		JButton exitButton = new JButton("EXIT");
+		exitButton.addActionListener((event)->{
+			JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(buttonPanel);
+			topFrame.dispatchEvent(new WindowEvent(topFrame, WindowEvent.WINDOW_CLOSING));
+		});
+		buttonPanel.add(readerButton);
+		buttonPanel.add(logInButton);
+		buttonPanel.add(jounalButton);
+		buttonPanel.add(submitButton);
+		buttonPanel.add(exitButton);
+		return buttonPanel;
+	}
+	public static JPanel createNewJournal() {
+		JPanel panel = new JPanel();
+		panel.setLayout(new GridLayout(0,2));
+		panel.add(new JLabel("issn:"));
+		JTextField issnTF = new JTextField(20);
+		panel.add(issnTF);
+		panel.add(new JLabel("journal name:"));
+		JTextField nameTF = new JTextField(20);
+		panel.add(nameTF);
+		panel.add(new JLabel("-----enter your(editor) info below(if you aready have an account, only enter email):"));
+		panel.add(new JLabel("-----"));
+		panel.add(new JLabel("email:"));
+		JTextField emailTF = new JTextField(20);
+		panel.add(emailTF);
+		panel.add(new JLabel("password:"));
+		JTextField passwordTF = new JTextField(20);
+		panel.add(passwordTF);
+		panel.add(new JLabel("title:"));
+		JTextField titleTF = new JTextField(20);
+		panel.add(titleTF);
+		panel.add(new JLabel("forename:"));
+		JTextField forenameTF = new JTextField(20);
+		panel.add(forenameTF);
+		panel.add(new JLabel("surname:"));
+		JTextField surnameTF = new JTextField(20);
+		panel.add(surnameTF);
+		panel.add(new JLabel("affliation:"));
+		JTextField affiliationTF = new JTextField(20);
+		panel.add(affiliationTF);
+		
+		JButton submit = new JButton("finish");
+		submit.addActionListener((event)->{
+			int issn = -1;
+			try {
+				issn = Integer.parseInt(issnTF.getText());
+			}catch(NumberFormatException e){
+				setMessage("issn only accept integer input");
+				return;
+			}
+				DatabaseHandler.signUp(emailTF.getText(),
+						passwordTF.getText(), titleTF.getText(),
+						forenameTF.getText(), surnameTF.getText(), affiliationTF.getText());
+				boolean success = DatabaseHandler.createJounral(issn,
+						nameTF.getText(), emailTF.getText(), new ArrayList<String>());
+				if(success) {
+					changePanel(createEditorSelectionPanel(emailTF.getText()));
+					setMessage("create new journal success");
+				}else {
+					setMessage("journal with same issn already exist in database");
+				}
+		});
+		panel.add(submit);
+		
+		return panel;
+	}
+	
+	public static JPanel createNewSubmissionPanel() {
+		JPanel panel = new JPanel();
+		panel.setLayout(new GridLayout(0,2));
+		panel.add(new JLabel("title :"));
+		JTextField titleTF = new JTextField();
+		panel.add(titleTF);
+		panel.add(new JLabel("abstract :"));
+		JTextField abstractTF = new JTextField();
+		panel.add(abstractTF);
+
+		panel.add(new JLabel("pdf :"));
+		JTextField pdf = new JTextField();
+		panel.add(new JLabel("not support"));
+
+		panel.add(new JLabel("issn :"));
+		JTextField issnTF = new JTextField();
+		panel.add(issnTF);
+		JButton addAuthor = new JButton("continue to add authors");
+		addAuthor.addActionListener((event)->{
+			try {
+				Work work = new Work(titleTF.getText(),
+						abstractTF.getText(),"",Integer.parseInt(issnTF.getText()));
+				changePanel(addAuthorPanel(work, true));
+			}catch(NumberFormatException e){
+				setMessage("issn only accept integer input");
+			}
+		});
+		panel.add(addAuthor);
+		
+		return panel;
+	}
+	public static JPanel addAuthorPanel(Work work, boolean mainAuthor) {
+		JPanel registerPanel = new JPanel();
+		registerPanel.setLayout(new BorderLayout());
+		JPanel signUpPanelField = new JPanel();
+		signUpPanelField.setLayout(new GridLayout(0,2));
+		if(mainAuthor) {
+			registerPanel.add(new JLabel("corresponding author(if the owner of the email "
+					+ "already has an account, only fill in the email):"),BorderLayout.NORTH);
+		}else {
+			registerPanel.add(new JLabel("other author(if the owner of the email "
+					+ "already has an account, only fill in the email):"),BorderLayout.NORTH);
+		}
+		
+		JLabel emailLB = new JLabel("email:");
+		JTextField emailTF = new JTextField(20);
+		JLabel passwordLB = new JLabel("password:");
+		JTextField passwordTF = new JTextField(20);
+		JLabel titleLB = new JLabel("title:");
+		JTextField titleTF = new JTextField(20);
+		JLabel forenameLB = new JLabel("forename:");
+		JTextField forenameTF = new JTextField(20);
+		JLabel surnameLB = new JLabel("surname:");
+		JTextField surnameTF = new JTextField(20);
+		JLabel affiliationLB = new JLabel("affliation:");
+		JTextField affiliationTF = new JTextField(20);
+		JButton addMoreButton = new JButton("add more author");
+		addMoreButton.addActionListener((event)->{
+			Author newAuthor = new Author(titleTF.getText(),
+					forenameTF.getText(),surnameTF.getText(),
+					affiliationTF.getText(),emailTF.getText(),passwordTF.getText());
+			if(mainAuthor) {
+				work.mainAuthor = newAuthor;
+			}else {
+				work.authors.add(newAuthor);
+			}
+			changePanel(addAuthorPanel(work, false));
+		});
+		JButton registerButton = new JButton("finish");
+		registerButton.addActionListener((event)->{
+			Author newAuthor = new Author(titleTF.getText(),
+					forenameTF.getText(),surnameTF.getText(),
+					affiliationTF.getText(),emailTF.getText(),passwordTF.getText());
+			if(mainAuthor) {
+				work.mainAuthor = newAuthor;
+			}else {
+				work.authors.add(newAuthor);
+			}
+			String extraMessage = "";
+			if(!work.mainAuthor.signup()) {
+				extraMessage+=","+work.mainAuthor.email;
+			}
+			for(Author author : work.authors){
+				if(!author.signup()) {
+					extraMessage+=","+author.email;
+				}
+			}
+			try {
+				int workID = DatabaseHandler.addWork(work.issn, work.mainAuthor, work.authors);
+				DatabaseHandler.addSubmision(workID, work.title, work._abstract, true);
+				changePanel(mainPanel());
+				if(extraMessage.equals("")) {
+					setMessage("new work is added"+extraMessage);
+				}else {
+					setMessage("new work is added"+extraMessage+" already have an account, therefore their account(s) are not created");
+				}
+
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				changePanel(mainPanel());
+				setMessage("you cannot add the work, maybe the issn does not exist");
+			}
+			
+		});
+		signUpPanelField.add(emailLB);
+		signUpPanelField.add(emailTF);
+		signUpPanelField.add(passwordLB);
+		signUpPanelField.add(passwordTF);
+		signUpPanelField.add(titleLB);
+		signUpPanelField.add(titleTF);
+		signUpPanelField.add(forenameLB);
+		signUpPanelField.add(forenameTF);
+		signUpPanelField.add(surnameLB);
+		signUpPanelField.add(surnameTF);
+		signUpPanelField.add(affiliationLB);
+		signUpPanelField.add(affiliationTF);
+		signUpPanelField.add(addMoreButton);
+		signUpPanelField.add(registerButton);
+		
+		registerPanel.add(signUpPanelField, BorderLayout.CENTER);
+		return registerPanel;
+	}
+	
+	
 	public static JPanel createLogInPanel() {
 		JPanel logInPanel = new JPanel();
 		logInPanel.setLayout(new GridLayout(3,1));
@@ -176,6 +362,9 @@ public class MainFrame extends JFrame {
 		logInPanel.add(logInButton);
 		return logInPanel;
 	}
+	
+	
+	
 	public static JPanel createAuthorPanel(String email) {
 		JPanel authorPanel = new JPanel();
 		List<Work> works = DatabaseHandler.getWorks(email);
@@ -719,8 +908,8 @@ public class MainFrame extends JFrame {
 		JTextField forenameTF = new JTextField(20);
 		JLabel surnameLB = new JLabel("surname:");
 		JTextField surnameTF = new JTextField(20);
-		JLabel affliationLB = new JLabel("affliation:");
-		JTextField affliationTF = new JTextField(20);
+		JLabel affiliationLB = new JLabel("affliation:");
+		JTextField affiliationTF = new JTextField(20);
 		JButton goBackButton = new JButton("cancel");
 		goBackButton.addActionListener((event)->{
 			changePanel(createEditorPanel(user, issn));
@@ -730,7 +919,7 @@ public class MainFrame extends JFrame {
 			if(
 			DatabaseHandler.signUp(emailTF.getText(), passwordTF.getText(),
 					titleTF.getText(), forenameTF.getText(), 
-					surnameTF.getText(), affliationTF.getText()))
+					surnameTF.getText(), affiliationTF.getText()))
 			{
 				//DatabaseHandler.addEditing(issn, emailTF.getText());
 			}
@@ -752,8 +941,8 @@ public class MainFrame extends JFrame {
 		signUpPanelField.add(forenameTF);
 		signUpPanelField.add(surnameLB);
 		signUpPanelField.add(surnameTF);
-		signUpPanelField.add(affliationLB);
-		signUpPanelField.add(affliationTF);
+		signUpPanelField.add(affiliationLB);
+		signUpPanelField.add(affiliationTF);
 		signUpPanelField.add(goBackButton);
 		signUpPanelField.add(registerButton);
 		

@@ -150,6 +150,15 @@ public class DatabaseHandler {
 			return false;
 		}
 	}
+	public static int addWork(int issn, Author correspondingAuthor, List<Author> authors) throws Exception {
+		List<String> otherAuthors = new ArrayList<String>();
+		for(Author au : authors) {
+			otherAuthors.add(au.email);
+		}
+		
+		return addWork(issn,correspondingAuthor.email,otherAuthors);
+	}
+	
 	public static int addWork(int issn, String correspondingAuthor, List<String> otherAuthor) throws Exception {
 		/**
 		 * return workID
@@ -166,6 +175,7 @@ public class DatabaseHandler {
 			while(res.next()) {
 				index = res.getInt(1);
 			}
+			System.out.println(index);
 			PreparedStatement pstmt2 = con.prepareStatement(
 					 "INSERT INTO authoring (email, workID, is_corresponding_author) VALUES (?,?,?)");
 			for(String email : otherAuthor) {

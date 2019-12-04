@@ -1,15 +1,34 @@
 package myUI;
 
-public class Author extends User {
+public class Author {
 	
-	private int authorId;
+	private int authorID;
+	public String title;
+	public String forename;
+	public String surname;
+	public String affiliation;
+	public String email;
+	public String password;
 	
 	public Author(String name, String email, int id) {
-		super(name, email);
-		authorId = id;
+		this.forename = name;
+		this.email = email;
+		authorID = id;
 	}
-	
-	public int getId() {
-		return authorId;
+	public Author(String title, String forename, String surname, String affliation,
+			String email, String password) {
+		this.title = title;
+		this.forename = forename;
+		this.surname = surname;
+		this.affiliation = affliation;
+		this.email = email;
+		this.password = password;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+	public boolean signup() {
+		return DatabaseHandler.signUp(email, password, title, forename, surname, affiliation);
 	}
 }
