@@ -10,7 +10,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 
-public class ReviewerUseCase extends MainFrame {
+public class ReviewerUseCaseHandler extends MainFrame {
 	public static JPanel createReviewerPanel(String email) {
 		JPanel reviewerPanel = new JPanel();
 		int reviewerID = DatabaseHandler.getReviewerID(email);

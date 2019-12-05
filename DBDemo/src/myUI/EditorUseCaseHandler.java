@@ -2,6 +2,7 @@ package myUI;
 
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.BoxLayout;
@@ -15,7 +16,88 @@ import javax.swing.JTextField;
  * @author Asus
  *
  */
-public class EditorUseCase extends MainFrame {
+public class EditorUseCaseHandler extends MainFrame {
+
+	public static JPanel createNewJournal() {
+		JPanel largePanel = new JPanel();
+		largePanel.setLayout(new BoxLayout(largePanel, BoxLayout.Y_AXIS));
+		largePanel.add(new JLabel("-----enter issn and journal name below(issn only accept integer):----"));
+
+		JPanel panel = new JPanel();
+		largePanel.add(panel);
+		panel.setLayout(new GridLayout(0,2));
+		panel.add(new JLabel("issn:"));
+		JTextField issnTF = new JTextField(20);
+		panel.add(issnTF);
+		panel.add(new JLabel("journal name:"));
+		JTextField nameTF = new JTextField(20);
+		panel.add(nameTF);
+		largePanel.add(new JLabel("-----enter your(editor) info below(if you aready have an account, only enter email):----"));
+		//panel.add(new JLabel("-----"));
+		JPanel panelUser = new JPanel();
+		panelUser.setLayout(new GridLayout(0,2));
+		largePanel.add(panelUser);
+		panelUser.add(new JLabel("email:"));
+		JTextField emailTF = new JTextField(20);
+		panelUser.add(emailTF);
+		panelUser.add(new JLabel("password:"));
+		JTextField passwordTF = new JTextField(20);
+		panelUser.add(passwordTF);
+		panelUser.add(new JLabel("title:"));
+		JTextField titleTF = new JTextField(20);
+		panelUser.add(titleTF);
+		panelUser.add(new JLabel("forename:"));
+		JTextField forenameTF = new JTextField(20);
+		panelUser.add(forenameTF);
+		panelUser.add(new JLabel("surname:"));
+		JTextField surnameTF = new JTextField(20);
+		panelUser.add(surnameTF);
+		panelUser.add(new JLabel("affliation:"));
+		JTextField affiliationTF = new JTextField(20);
+		panelUser.add(affiliationTF);
+		
+		JButton submit = new JButton("finish");
+		submit.addActionListener((event)->{
+			int issn = -1;
+			try {
+				issn = Integer.parseInt(issnTF.getText());
+			}catch(NumberFormatException e){
+				setMessage("issn only accept integer input");
+				return;
+			}
+			String email = emailTF.getText();
+			String password = passwordTF.getText();
+			String title = titleTF.getText();
+			String forename = forenameTF.getText();
+			String surname = surnameTF.getText();
+			String affiliation = affiliationTF.getText();
+			if(email.equals("")||password.equals("")||title.equals("")||forename.equals("")
+					||surname.equals("")||affiliation.equals("")) {
+				setMessage("please enter all details");
+				return;
+			}
+			
+			
+			DatabaseHandler.signUp(emailTF.getText(),
+					passwordTF.getText(), titleTF.getText(),
+					forenameTF.getText(), surnameTF.getText(), affiliationTF.getText());
+			boolean success = DatabaseHandler.createJounral(issn,
+					nameTF.getText(), emailTF.getText(), new ArrayList<String>());
+			if(success) {
+				changePanel(EditorUseCaseHandler.createEditorPanel(emailTF.getText(), issn));
+				setMessage("new journal successfully created");
+			}else {
+				setMessage("journal with same issn already exist in database");
+			}
+		});
+		JPanel submitPanel=new JPanel();
+		submitPanel.setLayout(new GridLayout(0,1));
+		largePanel.add(submitPanel);
+		submitPanel.add(submit);
+		
+		return largePanel;
+	}
+	
 	
 	public static JPanel createEditorSelectionPanel(String email) {
 		/**
