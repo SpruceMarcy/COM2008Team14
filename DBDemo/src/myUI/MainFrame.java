@@ -256,17 +256,30 @@ public class MainFrame extends JFrame {
 				setMessage("issn only accept integer input");
 				return;
 			}
-				DatabaseHandler.signUp(emailTF.getText(),
-						passwordTF.getText(), titleTF.getText(),
-						forenameTF.getText(), surnameTF.getText(), affiliationTF.getText());
-				boolean success = DatabaseHandler.createJounral(issn,
-						nameTF.getText(), emailTF.getText(), new ArrayList<String>());
-				if(success) {
-					changePanel(createEditorPanel(emailTF.getText(), issn));
-					setMessage("create new journal success");
-				}else {
-					setMessage("journal with same issn already exist in database");
-				}
+			String email = emailTF.getText();
+			String password = passwordTF.getText();
+			String title = titleTF.getText();
+			String forename = forenameTF.getText();
+			String surname = surnameTF.getText();
+			String affiliation = affiliationTF.getText();
+			if(email.equals("")||password.equals("")||title.equals("")||forename.equals("")
+					||surname.equals("")||affiliation.equals("")) {
+				setMessage("please enter all details");
+				return;
+			}
+			
+			
+			DatabaseHandler.signUp(emailTF.getText(),
+					passwordTF.getText(), titleTF.getText(),
+					forenameTF.getText(), surnameTF.getText(), affiliationTF.getText());
+			boolean success = DatabaseHandler.createJounral(issn,
+					nameTF.getText(), emailTF.getText(), new ArrayList<String>());
+			if(success) {
+				changePanel(createEditorPanel(emailTF.getText(), issn));
+				setMessage("new journal successfully created");
+			}else {
+				setMessage("journal with same issn already exist in database");
+			}
 		});
 		JPanel submitPanel=new JPanel();
 		submitPanel.setLayout(new GridLayout(0,1));
@@ -351,6 +364,19 @@ public class MainFrame extends JFrame {
 		JTextField affiliationTF = new JTextField(20);
 		JButton addMoreButton = new JButton("add more author");
 		addMoreButton.addActionListener((event)->{
+
+			String email = emailTF.getText();
+			String password = passwordTF.getText();
+			String title = titleTF.getText();
+			String forename = forenameTF.getText();
+			String surname = surnameTF.getText();
+			String affiliation = affiliationTF.getText();
+			if(email.equals("")||password.equals("")||title.equals("")||forename.equals("")
+					||surname.equals("")||affiliation.equals("")) {
+				setMessage("please enter all details");
+				return;
+			}
+			
 			Author newAuthor = new Author(titleTF.getText(),
 					forenameTF.getText(),surnameTF.getText(),
 					affiliationTF.getText(),emailTF.getText(),passwordTF.getText());
@@ -363,6 +389,18 @@ public class MainFrame extends JFrame {
 		});
 		JButton registerButton = new JButton("finish");
 		registerButton.addActionListener((event)->{
+
+			String email = emailTF.getText();
+			String password = passwordTF.getText();
+			String title = titleTF.getText();
+			String forename = forenameTF.getText();
+			String surname = surnameTF.getText();
+			String affiliation = affiliationTF.getText();
+			if(email.equals("")||password.equals("")||title.equals("")||forename.equals("")
+					||surname.equals("")||affiliation.equals("")) {
+				setMessage("please enter all details");
+				return;
+			}
 			Author newAuthor = new Author(titleTF.getText(),
 					forenameTF.getText(),surnameTF.getText(),
 					affiliationTF.getText(),emailTF.getText(),passwordTF.getText());
@@ -799,7 +837,7 @@ public class MainFrame extends JFrame {
 		
 		JPanel editorPanel = new JPanel();
 		editorPanel.setLayout(new GridLayout(0,1));
-		editorPanel.add(new JLabel("signed in as "+user+(isChiefEditor?"(chief editor)":"(editor)")));
+		editorPanel.add(new JLabel("signed in as "+user+(isChiefEditor?" (chief editor)":" (editor)")));
 		
 		JButton addVolumeButton = new JButton("add volume");
 		addVolumeButton.addActionListener((event)->{
@@ -813,7 +851,7 @@ public class MainFrame extends JFrame {
 		editorPanel.add(addEdition);
 		
 		if(isChiefEditor) {
-			JButton registerButton = new JButton("register");
+			JButton registerButton = new JButton("register new editor");
 			registerButton.addActionListener((event)->{
 				changePanel(createRegisterPage(user, issn));
 			});
@@ -1044,6 +1082,9 @@ public class MainFrame extends JFrame {
 			});
 			passrolePanel.add(passroleButton);
 		}
+		if(editors.size() == 1) {
+			passrolePanel.add(new JLabel("this journal has no other editors"));
+		}
 		JButton cancelButton = new JButton("--cancel--");
 		cancelButton.addActionListener((event)->{
 			changePanel(createEditorPanel(user, issn));
@@ -1074,6 +1115,20 @@ public class MainFrame extends JFrame {
 		});
 		JButton registerButton = new JButton("register new editor for issn "+issn);
 		registerButton.addActionListener((event)->{
+
+			String email = emailTF.getText();
+			String password = passwordTF.getText();
+			String title = titleTF.getText();
+			String forename = forenameTF.getText();
+			String surname = surnameTF.getText();
+			String affiliation = affiliationTF.getText();
+			if(email.equals("")||password.equals("")||title.equals("")||forename.equals("")
+					||surname.equals("")||affiliation.equals("")) {
+				setMessage("please enter all details");
+				return;
+			}
+			
+			
 			if(
 			DatabaseHandler.signUp(emailTF.getText(), passwordTF.getText(),
 					titleTF.getText(), forenameTF.getText(), 
