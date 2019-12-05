@@ -417,7 +417,8 @@ public class DatabaseHandler {
 					 "SELECT page_start,page_end,work.workID,submission.title,"
 					 + "submission.abstract,submission.pdf FROM article,work,submission "
 					 + "WHERE article.issn=? AND article.volume=? AND article.number=? "
-					 + "AND article.workID=work.workID AND submission.workID=work.workID");
+					 + "AND article.workID=work.workID AND submission.workID=work.workID "
+					 + "AND submission.submissionID=2");
 			pstmt.setInt(1, issn);
 			pstmt.setInt(2, volume);
 			pstmt.setInt(3, number);

@@ -11,33 +11,56 @@ import javax.swing.*;
 import javax.swing.filechooser.FileSystemView;
 import javax.swing.text.NumberFormatter;
 
+/**
+ * Start the apps.
+ * Contain the welcome panel, and the login panel.
+ * Click button or log in to enter other panel, 
+ *  which were stored in author/reader/editor/reviewer UseCaseHandler.
+ * @author Asus
+ * 
+ */
 public class MainFrame extends JFrame {
 // Needed for serialisation
 	private static final long serialVersionUID = 1L;
+	private static final String version = "1.0";
 	private static Container contentPane;
 	private static JPanel extraPanel;
 	public static MainFrame instance;
 	public static void main(String[] args) {
-		instance = new MainFrame("My Application");
+		instance = new MainFrame("Academic Publicher System"+"_version"+version);
 	}
 	public MainFrame() {
-		this("My Application");
+		this("Academic Publicher System"+"_version"+version);
 		setMessage("WELCOME");
 	}
 	public MainFrame(String title) {
 		this(title, mainPanel());
 		setMessage("WELCOME");
 	}
+	/**
+	 * initialize the application, including setting the contentPane and extraPanel
+	 * contentPane is the panel that consume most area and store the main panel
+	 * extraPanel provide an extra area to store extra messages and home button
+	 * 
+	 * @param title name of application
+	 * @param defaultPanel the initial panel when application start
+	 *  
+	 */
 	public MainFrame(String title, JPanel defaultPanel) {
 		super(title);
 		Toolkit toolkit = Toolkit.getDefaultToolkit();
 		Dimension screenSize = toolkit.getScreenSize();
-		setSize(screenSize.width/2, screenSize.height/2);
+		int width = screenSize.width/2;
+		
+		int height = screenSize.height/2;
+		if(width<960) {
+			width=960;
+			height=540;
+		}
+		setSize(width, height);
 		setLocation(screenSize.width/4, screenSize.height/4);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setVisible(true);
-
-
 		contentPane = new JPanel();
 		contentPane.setLayout(new FlowLayout());
 		extraPanel = new JPanel();
@@ -45,20 +68,25 @@ public class MainFrame extends JFrame {
 		mainContent.setLayout(new BorderLayout());
 		mainContent.add(contentPane, BorderLayout.CENTER);
 		mainContent.add(extraPanel,BorderLayout.SOUTH);
-		
-		
 		changePanel(defaultPanel);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setVisible(true);
-	}		
+	}
+	/**
+	 * change the current main panel to a new panel
+	 * @param panel the panel to change to
+	 */
 	public static void changePanel(JPanel panel) {
 		contentPane.removeAll();
 		clearMessage();
 		contentPane.add(panel);
 		contentPane.invalidate(); contentPane.validate(); contentPane.repaint();
 	}
+	/** 
+	 * 
+	 * @param message: the message to be shown
+	 */
 	public static void setMessage(String message) {
-		lastSetTime = System.nanoTime();
 		extraPanel.removeAll();
 		extraPanel.setLayout(new BorderLayout());
 		extraPanel.add(new JLabel(message), BorderLayout.CENTER);
@@ -69,18 +97,25 @@ public class MainFrame extends JFrame {
 		extraPanel.add(backToMenuButton, BorderLayout.EAST);
 		extraPanel.invalidate(); extraPanel.validate(); extraPanel.repaint();
 	}
-	private static float lastSetTime = 0;
+	/**
+	 * clear the message in extra panel
+	 */
 	public static void clearMessage() {
-		if(System.nanoTime() > lastSetTime) {
-			extraPanel.removeAll();
-			JButton backToMenuButton = new JButton("home");
-			backToMenuButton.addActionListener((event)->{
-				changePanel(mainPanel());
-			});
-			extraPanel.add(backToMenuButton, BorderLayout.EAST);
-		}
+		extraPanel.removeAll();
+		JButton backToMenuButton = new JButton("home");
+		backToMenuButton.addActionListener((event)->{
+			changePanel(mainPanel());
+		});
+		extraPanel.add(backToMenuButton, BorderLayout.EAST);
 		extraPanel.invalidate(); extraPanel.validate(); extraPanel.repaint();
 	}
+	/**
+	 * the welcome panel.
+	 * contain 5 button:
+	 *  read article,login,new journal
+	 *  new submission,exit
+	 * @return
+	 */
 	public static JPanel mainPanel() {
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.setLayout(new GridLayout(5, 1));
@@ -112,9 +147,13 @@ public class MainFrame extends JFrame {
 		buttonPanel.add(exitButton);
 		return buttonPanel;
 	}
+	
 	public static File pdf = null;
-	
-	
+	/**
+	 * log in panel, contain username and password field
+	 *  contain dropdown to select role and a login button
+	 * @return
+	 */
 	public static JPanel createLogInPanel() {
 		JPanel logInPanel = new JPanel();
 		logInPanel.setLayout(new GridLayout(3,1));
@@ -130,7 +169,6 @@ public class MainFrame extends JFrame {
 		logInPanelField.add(userNameTF);
 		logInPanelField.add(passwordLB);
 		logInPanelField.add(passwordPF);
-		
 		logInPanel.add(logInPanelField);
 		// then combo box for role and button for log in
 		JComboBox<String> roleCB = new JComboBox<String>();
@@ -144,24 +182,7 @@ public class MainFrame extends JFrame {
 			String userName = userNameTF.getText();
 			String password = passwordPF.getText();
 			String role = roleCB.getSelectedItem().toString();
-			System.out.println(userName);
-			System.out.println(password);
-			System.out.println(role);
 			boolean loginSuccess = DatabaseHandler.logIn(userName,password);
-			if(userName.equals("x")) {
-				loginSuccess = true;
-				switch(role) {
-				case "Editor":
-					userName = "EdGordon";
-					break;
-				case "Author":
-					userName = "AuMary";
-					break;
-				case "Reviewer":
-					userName = "AuPeter";
-					break;
-				}
-			}
 			if(!loginSuccess) {
 				setMessage("log in fail");
 				return;
@@ -194,7 +215,11 @@ public class MainFrame extends JFrame {
 		return logInPanel;
 	}
 	
-	
+	/**
+	 * 
+	 * @param work
+	 * @return a download button to download the given work
+	 */
 	protected static JButton downloadButton(Work work) {
 		JButton downloadPdfButton = new JButton("download to your computer");
 		downloadPdfButton.addActionListener((event)->{

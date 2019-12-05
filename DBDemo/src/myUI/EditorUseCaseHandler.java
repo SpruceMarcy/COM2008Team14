@@ -122,7 +122,7 @@ public class EditorUseCaseHandler extends MainFrame {
 		// EdTomas/pw : chiefeditor
 		// EdGordon : editor
 		System.out.println(DatabaseHandler.getChiefEditor(issn));
-		boolean isChiefEditor = DatabaseHandler.getChiefEditor(issn).equals(user);
+		boolean isChiefEditor = DatabaseHandler.getChiefEditor(issn).toLowerCase().equals(user.toLowerCase());
 		System.out.println(isChiefEditor);
 		
 		JPanel editorPanel = new JPanel();
@@ -358,7 +358,7 @@ public class EditorUseCaseHandler extends MainFrame {
 		passrolePanel.setLayout(new GridLayout(0,1));
 		List<String> editors = DatabaseHandler.getEditors(issn);
 		for(String editor : editors) {
-			if(editor.equals(user)) {
+			if(editor.toLowerCase().equals(user.toLowerCase())) {
 				continue;
 			}
 			JButton passroleButton = new JButton(editor);

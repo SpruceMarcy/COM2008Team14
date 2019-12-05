@@ -18,6 +18,11 @@ import javax.swing.filechooser.FileSystemView;
 
 public class AuthorUseCaseHandler extends MainFrame  {
 
+	/**
+	 * 
+	 * @return a jpanel that contains field for user to input info for the new submission
+	 *         after user click add author, the panel will be changed to add author panel
+	 */
 	public static JPanel createNewSubmissionPanel() {
 		JPanel panel = new JPanel();
 		panel.setLayout(new GridLayout(0,2));
@@ -65,6 +70,13 @@ public class AuthorUseCaseHandler extends MainFrame  {
 		
 		return panel;
 	}
+	/**
+	 * 
+	 * @param work the work that are going to be sent to database
+	 * @param mainAuthor to know whether this form is for author or correspondingauthor
+	 * @return a panel/form that allow user to add a new author, 
+	 *         user can submit after adding a author or continue adding other author
+	 */
 	public static JPanel addAuthorPanel(Work work, boolean mainAuthor) {
 		JPanel registerPanel = new JPanel();
 		registerPanel.setLayout(new BorderLayout());
@@ -183,15 +195,20 @@ public class AuthorUseCaseHandler extends MainFrame  {
 		return registerPanel;
 	}
 	
+	// below provide jpanel that author see after log in
 	
 	
-	
-	
+	/**
+	 * 
+	 * @param email user who log in
+	 * @return a jpanel that contain submission for user to choose, 
+	 *         and a button that allow user to change password
+	 */
 	public static JPanel createAuthorPanel(String email) {
 		JPanel authorPanel = new JPanel();
 		List<Work> works = DatabaseHandler.getWorks(email);
 		authorPanel.setLayout(new GridLayout(0,1));
-		JLabel labels = new JLabel("select your current journal");
+		JLabel labels = new JLabel("select your current submission");
 		authorPanel.add(labels);
 		for(Work i : works) {
 			if(i.state==2)continue;
@@ -209,6 +226,11 @@ public class AuthorUseCaseHandler extends MainFrame  {
 		authorPanel.add(changePWbutton);
 		return authorPanel;
 	}
+	/**
+	 * 
+	 * @param email user who want to change pw
+	 * @return a panel/form that user use to change pw
+	 */
 	public static JPanel changeAuthorPasswordPanel(String email) {
 		JPanel changePasswordPanel = new JPanel();
 		changePasswordPanel.setLayout(new GridLayout(0,2));
@@ -245,8 +267,16 @@ public class AuthorUseCaseHandler extends MainFrame  {
 		return changePasswordPanel;
 	}
 
+	/**
+	 * 
+	 * @param author
+	 * @param work
+	 * @return a panel that show author details of their selected work,
+	 *         if user is corresponding author and there are enough review
+	 *         user can response and submit final submission
+	 */
 	public static JPanel createAuthorWorkDetailPanel(String author, Work work) {
-		boolean isMainAuthor = DatabaseHandler.getCorrespondingAuthor(work.workID).getEmail().equals(author);
+		boolean isMainAuthor = DatabaseHandler.getCorrespondingAuthor(work.workID).getEmail().toLowerCase().equals(author.toLowerCase());
 		List<Review> reviews = DatabaseHandler.getReviewsAndVerdicts(work.workID);
 		System.out.println(reviews.size());
 		System.out.println(isMainAuthor);
