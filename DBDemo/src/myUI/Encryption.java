@@ -7,6 +7,15 @@ import java.util.Base64;
 
 public class Encryption {
 	
+	private static void main(String[] args) {
+		String mypw= "uos";
+		String encrytedPW = generateHash(mypw);
+		String mypw2= "uos";
+		String encrytedPW2 = generateHash(mypw);
+		System.out.println(comparePasswords("uos",encrytedPW));
+		System.out.println(encrytedPW.equals(encrytedPW2));
+	}
+	
 	public static Boolean comparePasswords(String rawPassword, String hashedPassword) {
 		String salt = hashedPassword.substring(0,24);
 		System.out.println(salt+encrypt(rawPassword,salt));

@@ -67,14 +67,15 @@ public class DatabaseHandler {
 		try(Connection con = connect()){
 			//System.out.println("SELECT * FROM account WHERE email=? AND password=?");
 			PreparedStatement pstmt = con.prepareStatement(
-					 "SELECT * FROM account WHERE email=? AND password=?");
+					 "SELECT password FROM account WHERE email=?");
 			pstmt.setString(1, email);
-			pstmt.setString(2, password);
 			ResultSet res = pstmt.executeQuery();
-			System.out.println(res.getFetchSize());
+			System.out.println("test");
 			while(res.next()) {
+				String hashedPW = res.getString(1);
+				System.out.println(hashedPW);
 				res.close();
-				return true;
+				return Encryption.comparePasswords(password, hashedPW);
 			}
 			res.close();
 		}
@@ -88,7 +89,9 @@ public class DatabaseHandler {
 			PreparedStatement pstmt = con.prepareStatement(
 					 "INSERT INTO account (email, password, title, forename, surname, affiliation) VALUES (?,?,?,?,?,?)");
 			pstmt.setString(1, email);
-			pstmt.setString(2, password);
+			String encrytedPW = Encryption.generateHash(password);
+			System.out.println(encrytedPW);
+			pstmt.setString(2, encrytedPW);
 			pstmt.setString(3, title);
 			pstmt.setString(4, firstName);
 			pstmt.setString(5, lastName);
@@ -111,7 +114,7 @@ public class DatabaseHandler {
 		try(Connection con = connect()){
 			PreparedStatement pstmt = con.prepareStatement(
 					 "UPDATE account SET password=? WHERE email=?");
-			pstmt.setString(1, newPassword);
+			pstmt.setString(1, Encryption.generateHash(newPassword));
 			pstmt.setString(2, email);
 
 			pstmt.execute();
