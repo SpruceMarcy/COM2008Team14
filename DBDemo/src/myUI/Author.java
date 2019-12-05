@@ -29,7 +29,14 @@ public class Author {
 		return email;
 	}
 	public boolean signup() {
-		return DatabaseHandler.signUp(email, password, title, forename, surname, affiliation);
+		boolean newAccount= DatabaseHandler.signUp(email, password, title, forename, surname, affiliation);
+		try {
+			DatabaseHandler.setReviewer(email);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return newAccount;
 	}
 	public String getName() {
 		return title+" "+forename+" "+surname;

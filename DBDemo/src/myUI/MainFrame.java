@@ -584,7 +584,6 @@ public class MainFrame extends JFrame {
 		uploadButton.addActionListener((event)->{
 			JFileChooser pdfFC = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
 			int returnValue = pdfFC.showOpenDialog(null);
-			// int returnValue = jfc.showSaveDialog(null);
 			if (returnValue == JFileChooser.APPROVE_OPTION) {
 				File selectedFile = pdfFC.getSelectedFile();
 				System.out.println(selectedFile.getAbsolutePath());
@@ -642,16 +641,14 @@ public class MainFrame extends JFrame {
 		}
 		return reviewPanel;
 	}
-	
-	
-	
-	
+
 	public static JPanel createReviewerPanel(String email) {
 		JPanel reviewerPanel = new JPanel();
 		int reviewerID = DatabaseHandler.getReviewerID(email);
 		reviewerPanel.setLayout(new GridLayout(0,1));
 		reviewerPanel.add(new JLabel("HERE are the submission you can review"));
-		List<Work> reviewList = DatabaseHandler.getWorksReview(email);
+		String affiliation = DatabaseHandler.getAffiliation(email);
+		List<Work> reviewList = DatabaseHandler.getWorksReview(affiliation);
 		for(Work review : reviewList) {
 			System.out.println(review.title);
 			JButton button = new JButton(review.title);
@@ -802,7 +799,7 @@ public class MainFrame extends JFrame {
 		
 		JPanel editorPanel = new JPanel();
 		editorPanel.setLayout(new GridLayout(0,1));
-		editorPanel.add(new JLabel("signed in as "+user));
+		editorPanel.add(new JLabel("signed in as "+user+(isChiefEditor?"(chief editor)":"(editor)")));
 		
 		JButton addVolumeButton = new JButton("add volume");
 		addVolumeButton.addActionListener((event)->{
@@ -850,7 +847,6 @@ public class MainFrame extends JFrame {
 		panel.setLayout(new GridLayout(0,1));
 		panel.add(new JLabel("here are the submissions:"));
 		List<Work> works = DatabaseHandler.getSubmission(issn);
-		System.out.println(works.size());
 		for(Work work : works) {
 			JButton button = new JButton(work.title);
 			button.addActionListener((event)->{
@@ -949,9 +945,11 @@ public class MainFrame extends JFrame {
 	
 	public static JPanel acceptSubmissionPanel(Work work, int issn, String email) {
 		List<Review> reviews = DatabaseHandler.getReviewsAndVerdicts(work.workID);
+		String editorAffiliation = DatabaseHandler.getAffiliation(email);
+		boolean canAccept = !DatabaseHandler.isSameAffiliation(editorAffiliation, work.workID);
 		
 		JPanel acceptWorkPanel = new JPanel();
-		acceptWorkPanel.setLayout(new BorderLayout());
+		acceptWorkPanel.setLayout(new BoxLayout(acceptWorkPanel, BoxLayout.Y_AXIS));
 		
 		JPanel workDetailPanel = new JPanel();
 		acceptWorkPanel.add(workDetailPanel, BorderLayout.NORTH);
@@ -1008,16 +1006,21 @@ public class MainFrame extends JFrame {
 				setMessage("edition/volume not exist, or another article is using the same page number");
 			}
 		});
+		if(canAccept) {
+			workDetailPanel.add(rejectButton);
+			workDetailPanel.add(acceptButton);
+		}
 		
-		workDetailPanel.add(rejectButton);
-		workDetailPanel.add(acceptButton);
-		
-
+		JPanel cancelPanel = new JPanel();
 		JButton cancelButton = new JButton("cancel");
+		cancelPanel.setLayout(new GridLayout(0,1));
 		cancelButton.addActionListener((event)->{
 			changePanel(createEditorPanel(email, issn));
 		});
-		acceptWorkPanel.add(cancelButton, BorderLayout.SOUTH);		
+
+		cancelPanel.add(cancelButton);
+		acceptWorkPanel.add(cancelPanel);
+		if(!canAccept)acceptWorkPanel.add(new JLabel("unable to accpet or reject due to conflict of interest"));
 		return acceptWorkPanel;
 	}
 	

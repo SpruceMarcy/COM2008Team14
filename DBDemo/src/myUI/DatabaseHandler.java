@@ -10,24 +10,37 @@ import java.util.*;
 public class DatabaseHandler {
 	public static void main(String[] args) throws Exception{
 
-		showAllWorks();
-		showUsers();
-		DatabaseHandler.signUp("test1","pw","mr","first name","last","und");
-//		DatabaseHandler.setAuthor("test1");
-		DatabaseHandler.signUp("test2","pw","ms","first name2","last2","post");
-//		DatabaseHandler.setAuthor("test2");
-
-//		DatabaseHandler.setEditor("test1");
-		DatabaseHandler.setReviewer("test1");
-		String[] b = new String[] {};
-		DatabaseHandler.createJounral(1,"name","test1",Arrays.asList(b));
-		String[] a = new String[] {"test2"};
-		DatabaseHandler.addWork(1,"test1",Arrays.asList(a));
-		
-		
-		System.out.println(DatabaseHandler.addVerdict(1, 1, 1, 1));
-
-		System.out.println(getAuthors(1));
+			try(Connection con = connect()){
+				PreparedStatement pstmt = con.prepareStatement(
+						"SELECT wk2.workID, wk2.subID, wk2.title, wk2.abst, wk2.pdf FROM"
+						+ ""
+						+ "(SELECT work.workID workID,submission.submissionID subID,submission.title title,"
+						+ "submission.abstract abst,submission.pdf pdf FROM work LEFT JOIN article ON work.workID=article.workID"
+						+ ",submission INNER JOIN ("
+						+ "SELECT workID,MAX(submissionID) submissionID FROM submission GROUP BY workID"
+						+ ") sub ON submission.submissionID=sub.submissionID AND submission.workID=sub.workID "
+						+ "WHERE work.workID=submission.workID "
+						+ "AND article.workID IS NULL) wk2 "
+						+ "WHERE wk2.workID NOT IN "
+						+ "(SELECT DISTINCT(work.workID) FROM work, authoring, account "
+						+ "WHERE work.workID=authoring.workID AND authoring.email=account.email "
+						+ "AND account.affiliation=?)"
+						);
+			pstmt.setString(1, "uos");
+			ResultSet res = pstmt.executeQuery();
+			List<Work> works = new ArrayList<Work>();
+			while(res.next()) {
+//				int workID = res.getInt(1);
+//				int submissionID = res.getInt(2);
+//				String title = res.getString(3);
+//				String _abstract = res.getString(4);
+//				byte[] fileBytes = res.getBytes(5);
+//				works.add(new Work(workID, title, _abstract, fileBytes, submissionID));
+				System.out.println(res.getString(1));
+			}
+			System.out.println("end");
+			res.close();
+		}
 	}
 	public static void showUsers() throws Exception {
 		try(Connection con = connect()){
@@ -818,9 +831,12 @@ public class DatabaseHandler {
 
 	}
 	public static List<Work> getWorks(String email) {
+		/**
+		 * this is showing to author before their final submission
+		 */
 		try(Connection con = connect()){
 			PreparedStatement pstmt = con.prepareStatement(
-					 "SELECT work.workID,issn,MAX(submission.submissionID),submission.title,"
+					 "SELECT work.workID,issn,submission.submissionID,submission.title,"
 					 + "submission.abstract,submission.pdf FROM work "
 					 + ",submission,authoring WHERE work.workID=submission.workID"
 					 + " AND authoring.workID=work.workID AND authoring.email=?"
@@ -845,24 +861,32 @@ public class DatabaseHandler {
 		}
 		return new ArrayList<Work>();
 	}
-	public static List<Work> getWorksReview(String email) {
+	public static List<Work> getWorksReview(String affiliation) {
 		try(Connection con = connect()){
 			PreparedStatement pstmt = con.prepareStatement(
-					 "SELECT work.workID,issn,MAX(submission.submissionID),submission.title,"
-					 + "submission.abstract,submission.pdf FROM work "
-					 + ",submission,authoring WHERE work.workID=submission.workID"
-					 + " AND authoring.workID=work.workID AND authoring.email<>?"
-					 + " GROUP BY work.workID");
-			pstmt.setString(1, email);
+					"SELECT wk2.workID, wk2.subID, wk2.title, wk2.abst, wk2.pdf FROM"
+					+ ""
+					+ "(SELECT work.workID workID,submission.submissionID subID,submission.title title,"
+					+ "submission.abstract abst,submission.pdf pdf FROM work LEFT JOIN article ON work.workID=article.workID"
+					+ ",submission INNER JOIN ("
+					+ "SELECT workID,MAX(submissionID) submissionID FROM submission GROUP BY workID"
+					+ ") sub ON submission.submissionID=sub.submissionID AND submission.workID=sub.workID "
+					+ "WHERE work.workID=submission.workID "
+					+ "AND article.workID IS NULL) wk2 "
+					+ "WHERE wk2.workID NOT IN "
+					+ "(SELECT DISTINCT(work.workID) FROM work, authoring, account "
+					+ "WHERE work.workID=authoring.workID AND authoring.email=account.email "
+					+ "AND account.affiliation=?)"
+					);
+			pstmt.setString(1, affiliation);
 			ResultSet res = pstmt.executeQuery();
 			List<Work> works = new ArrayList<Work>();
 			while(res.next()) {
 				int workID = res.getInt(1);
-				int issn = res.getInt(2);
-				int submissionID = res.getInt(3);
-				String title = res.getString(4);
-				String _abstract = res.getString(5);
-				byte[] fileBytes = res.getBytes(6);
+				int submissionID = res.getInt(2);
+				String title = res.getString(3);
+				String _abstract = res.getString(4);
+				byte[] fileBytes = res.getBytes(5);
 				works.add(new Work(workID, title, _abstract, fileBytes, submissionID));
 
 			}
@@ -873,6 +897,24 @@ public class DatabaseHandler {
 			System.out.println(e);
 		}
 		return new ArrayList<Work>();
+	}
+	public static String getAffiliation(String email) {
+		try(Connection con = connect()){
+			PreparedStatement pstmt = con.prepareStatement(	""
+					+ "SELECT affiliation FROM account WHERE email=?");
+			pstmt.setString(1, email);
+			ResultSet res = pstmt.executeQuery();
+			while(res.next()) {
+				String affiliation = res.getString(1);
+				res.close();
+				return affiliation;
+			}
+			res.close();
+		}
+		catch(Exception e) {
+			System.out.println(e);
+		}
+		return null;
 	}
 	public static List<Integer> getJournals(String email) {
 		try(Connection con = connect()){
@@ -953,7 +995,7 @@ public class DatabaseHandler {
 	public static int getVerdict(int reviewerID, int workID, int submissionID) {
 		try(Connection con = connect()){
 			PreparedStatement pstmt = con.prepareStatement(
-					 "SELECT verdictID, MAX(submissionID) FROM verdict "
+					 "SELECT verdictID, submissionID FROM verdict "
 					 + "WHERE reviewerID=? AND workID=? AND submissionID=?");
 			pstmt.setInt(1, reviewerID);
 			pstmt.setInt(2, workID);
@@ -1016,13 +1058,12 @@ public class DatabaseHandler {
 	public static List<Work> getSubmission(int issn){
 		try(Connection con = connect()){
 			PreparedStatement pstmt = con.prepareStatement(
-					 "SELECT work.workID,MAX(submission.submissionID),submission.title,"
+					 "SELECT work.workID,submission.submissionID,submission.title,"
 					 + "submission.abstract,submission.pdf FROM work LEFT JOIN article ON work.workID=article.workID"
-					 + ",submission,authoring "
+					 + ",submission INNER JOIN (SELECT workID,MAX(submissionID) submissionID FROM submission GROUP BY workID) sub ON submission.submissionID=sub.submissionID AND submission.workID=sub.workID "
 					 + "WHERE work.workID=submission.workID "
-					 + "AND authoring.workID=work.workID AND work.issn=? "
-					 + "AND article.workID IS NULL"
-					 + " GROUP BY work.workID");
+					 + "AND work.issn=? "
+					 + "AND article.workID IS NULL");
 			pstmt.setInt(1, issn);
 			ResultSet res = pstmt.executeQuery();
 			List<Work> works = new ArrayList<Work>();
@@ -1031,6 +1072,7 @@ public class DatabaseHandler {
 //				int issn = res.getInt(2);
 				int submissionID = res.getInt(2);
 				String title = res.getString(3);
+				System.out.println("--"+submissionID+"--"+title);
 				String _abstract = res.getString(4);
 				byte[] fileBytes = res.getBytes(5);
 				works.add(new Work(workID, title, _abstract, fileBytes, submissionID));
@@ -1043,6 +1085,29 @@ public class DatabaseHandler {
 		}
 		return new ArrayList<Work>();
 	}
+	public static boolean isSameAffiliation(String editorAffiliation, int workID) {
+		try(Connection con = connect()){
+			PreparedStatement pstmt = con.prepareStatement(
+					"SELECT COUNT(*) FROM account,authoring,work "
+					+ "WHERE work.workID=authoring.workID AND "
+					+ "authoring.email=account.email AND "
+					+ "account.affiliation=? AND work.workID=?");
+			pstmt.setString(1, editorAffiliation);
+			pstmt.setInt(2, workID);
+			ResultSet res = pstmt.executeQuery();
+			while(res.next()) {
+				int count=res.getInt(1);
+				res.close();
+				return count>0;
+			}
+			res.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.out.println(e);
+		}
+		return false;
+	}
+	
 	public static void rejectWork(int workID) {
 		try(Connection con = connect()){
 			PreparedStatement pstmt = con.prepareStatement(

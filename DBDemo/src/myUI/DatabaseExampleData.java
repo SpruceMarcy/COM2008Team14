@@ -19,7 +19,7 @@ public class DatabaseExampleData {
 		DatabaseHandler.signUp("EdSam","pw","mr","first name2","last2","uos");	
 		
 
-		DatabaseHandler.signUp("AuPeter","pw","mr","first name","last","uos");
+		DatabaseHandler.signUp("AuPeter","pw","mr","first name","last","uos123");
 		DatabaseHandler.signUp("AuMary","pw","mr","first name2","last2","uos");
 		DatabaseHandler.signUp("AuJordon","pw","mr","first name2","last2","uos");
 		DatabaseHandler.signUp("AuDog","pw","mr","dog","dogg","uos");
