@@ -289,6 +289,7 @@ public class EditorUseCaseHandler extends MainFrame {
 		workDetailPanel.add(new JLabel(work._abstract));
 		workDetailPanel.add(new JLabel("pdf:"));
 		workDetailPanel.add(downloadButton(work));
+		int finalVerdictCount = 0;
 		for(Review r : reviews) {
 			workDetailPanel.add(new JLabel("review"+r.reviewID+" :"));
 			workDetailPanel.add(new JLabel(r.review));
@@ -300,8 +301,11 @@ public class EditorUseCaseHandler extends MainFrame {
 			workDetailPanel.add(new JLabel("verdict"+r.reviewID+" :"));
 			workDetailPanel.add(new JLabel(verdictIDtoVerdict(verdict)));
 			
+			if(verdict!=-1) {
+				finalVerdictCount++;
+			}
 		}
-		
+		boolean enoughfinalverdict = finalVerdictCount==3;
 		workDetailPanel.add(new JLabel("volume"));
 		JTextField volumeTF = new JTextField();
 		workDetailPanel.add(volumeTF);		
@@ -344,7 +348,7 @@ public class EditorUseCaseHandler extends MainFrame {
 				setMessage("edition/volume not exist, or another article is using the same page number");
 			}
 		});
-		if(canAccept) {
+		if(canAccept && enoughfinalverdict) {
 			workDetailPanel.add(rejectButton);
 			workDetailPanel.add(acceptButton);
 		}
@@ -359,6 +363,7 @@ public class EditorUseCaseHandler extends MainFrame {
 		cancelPanel.add(cancelButton);
 		acceptWorkPanel.add(cancelPanel);
 		if(!canAccept)acceptWorkPanel.add(new JLabel("unable to accpet or reject due to conflict of interest"));
+		if(!enoughfinalverdict)acceptWorkPanel.add(new JLabel("unable to accpet or reject due to not enough final verdicts(3)"));
 		return acceptWorkPanel;
 	}
 	

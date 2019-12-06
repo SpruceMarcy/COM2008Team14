@@ -355,7 +355,7 @@ public class AuthorUseCaseHandler extends MainFrame  {
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
-					setMessage("submit fail");
+					setMessage("submit fail, probably final pdf is missing");
 				}
 			});
 			
