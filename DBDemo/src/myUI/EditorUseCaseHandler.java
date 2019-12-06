@@ -13,11 +13,16 @@ import javax.swing.JTextField;
 
 /**
  * this class store jpanels used by editor
- * @author Asus
+ * @author ling
  *
  */
 public class EditorUseCaseHandler extends MainFrame {
 
+	/**
+	 * 
+	 * @return a form that allow user to enter info for a journal and info of himself.
+	 * if create journal success, he would log in to his ac automatically and could set up details of the journal there
+	 */
 	public static JPanel createNewJournal() {
 		JPanel largePanel = new JPanel();
 		largePanel.setLayout(new BoxLayout(largePanel, BoxLayout.Y_AXIS));
@@ -99,11 +104,12 @@ public class EditorUseCaseHandler extends MainFrame {
 		return largePanel;
 	}
 	
-	
+	/**
+	 * 
+	 * @param email editor who logged in
+	 * @return a panel that allow editor to choose which journal he is working.
+	 */
 	public static JPanel createEditorSelectionPanel(String email) {
-		/**
-		 * select which journal to work on
-		 */
 		JPanel editorPanel = new JPanel();
 		List<Integer> journals = DatabaseHandler.getJournals(email);
 		editorPanel.setLayout(new GridLayout(journals.size()+1,1));
@@ -119,9 +125,17 @@ public class EditorUseCaseHandler extends MainFrame {
 		return editorPanel;
 	}
 	
+	/**
+	 * 
+	 * @param user editor who logged in
+	 * @param issn the journal he is editing
+	 * @return a panel that contains action editor can perform.
+	 *  add journal, add volume, view articles.
+	 *  if chief editor: can register other editor, and pass his role
+	 *  if not:can retire.
+	 *  
+	 */
 	public static JPanel createEditorPanel(String user, int issn) {
-		// EdTomas/pw : chiefeditor
-		// EdGordon : editor
 		System.out.println(DatabaseHandler.getChiefEditor(issn));
 		boolean isChiefEditor = DatabaseHandler.getChiefEditor(issn).toLowerCase().equals(user.toLowerCase());
 		System.out.println(isChiefEditor);
@@ -168,6 +182,12 @@ public class EditorUseCaseHandler extends MainFrame {
 		editorPanel.add(manageArticleButton);
 		return editorPanel;
 	}
+	/**
+	 * 
+	 * @param issn the journal
+	 * @param editor the editor
+	 * @return a panel that show all submission to this journal
+	 */
 	public static JPanel manageSubmissionPanel(int issn, String editor) {
 		/** 
 		 * show a list of work submitted to this issn
@@ -190,6 +210,12 @@ public class EditorUseCaseHandler extends MainFrame {
 		panel.add(cancelButton);
 		return panel;
 	}
+	/**
+	 * 
+	 * @param issn the journal
+	 * @param editor
+	 * @return a panel that allow editor to add volume
+	 */
 	public static JPanel addVolumePanel(int issn, String editor) {
 		JPanel addVolumePanel = new JPanel();
 		addVolumePanel.setLayout(new GridLayout(0,1));
@@ -219,6 +245,13 @@ public class EditorUseCaseHandler extends MainFrame {
 		addVolumePanel.add(cancelButton);
 		return addVolumePanel;
 	}
+	/**
+	 * 
+	 * @param issn
+	 * @param editor
+	 * @return a panel that allow editor choose which volume to add edition,
+	 *  after that, editor can add edition to that volume
+	 */
 	public static JPanel addEditionPanel(int issn, String editor) {
 		JPanel addEditionPanel = new JPanel();
 		addEditionPanel.setLayout(new GridLayout(0,1));
@@ -239,6 +272,13 @@ public class EditorUseCaseHandler extends MainFrame {
 		addEditionPanel.add(cancelButton);
 		return addEditionPanel;
 	}
+	/**
+	 * 
+	 * @param issn
+	 * @param volume
+	 * @param editor
+	 * @return
+	 */
 	public static JPanel addEditionPanel2(int issn, int volume, String editor) {
 		JPanel addEditionPanel = new JPanel();
 		addEditionPanel.setLayout(new GridLayout(0,1));

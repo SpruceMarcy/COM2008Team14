@@ -21,6 +21,14 @@ import org.junit.jupiter.api.TestMethodOrder;
 import static org.junit.Assert.*;
 import static org.hamcrest.CoreMatchers.*;
 
+/**
+ * 
+ * @author Ling
+ *	the testing does not include all methods in databasehandler(or method used in the application).
+ *  however, it include all essential methods that could perform all use cases.
+ *  the testing is not updated at the final stage of implementation, 
+ *  but still compatible with current version of databasehandler
+ */
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class DatabaseHandlerTest {
 	int x = 1;
