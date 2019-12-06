@@ -313,10 +313,10 @@ public class AuthorUseCaseHandler extends MainFrame  {
 			}
 		});
 		if(reviews.size()>=3) {
-			reviewTextPanel.add(new JLabel("pdf:"));
+			reviewTextPanel.add(new JLabel("resummit pdf:"));
 			reviewTextPanel.add(uploadButton);
 		}else {
-			reviewTextPanel.add(new JLabel("resummit pdf:"));
+			reviewTextPanel.add(new JLabel("pdf:"));
 			reviewTextPanel.add(downloadButton(work));
 		}
 		for(Review review:reviews) {
