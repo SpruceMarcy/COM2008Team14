@@ -9,6 +9,10 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 public class ReaderUseCaseHandler extends MainFrame {
+	/**
+	 * 
+	 * @return a panel that show all existing journal
+	 */
 	public static JPanel createReadJournalPanel() {
 		List<Journal> journals = DatabaseHandler.getJournals();
 		JPanel largePanel = new JPanel();
@@ -26,6 +30,11 @@ public class ReaderUseCaseHandler extends MainFrame {
 		}
 		return largePanel;
 	}
+	/**
+	 * 
+	 * @param journal
+	 * @return a panel that show all existing volume in that journal
+	 */
 	public static JPanel createReadVolumePanel(Journal journal) {
 		List<Integer> volumes = DatabaseHandler.getVolumes(journal.issn);
 		JPanel largePanel = new JPanel();
@@ -44,6 +53,11 @@ public class ReaderUseCaseHandler extends MainFrame {
 		return largePanel;
 	}
 
+	/**
+	 * 
+	 * @param journal
+	 * @return a panel that show all existing edition in that volume of the journal
+	 */
 	public static JPanel createReadEditionPanel(Journal journal, int volume) {
 		List<Integer> editions = DatabaseHandler.getEditions(journal.issn, volume);
 		JPanel largePanel = new JPanel();
@@ -61,6 +75,13 @@ public class ReaderUseCaseHandler extends MainFrame {
 		}
 		return largePanel;
 	}
+	/**
+	 * 
+	 * @param journal
+	 * @param volume
+	 * @param edition
+	 * @return  a panel that show all existing article in that edition of that volume of the journal
+	 */
 	public static JPanel createReadArticlePanel(Journal journal, int volume, int edition) {
 		List<Article> articles = DatabaseHandler.getArticles(journal.issn, volume, edition);
 		JPanel largePanel = new JPanel();
@@ -78,6 +99,12 @@ public class ReaderUseCaseHandler extends MainFrame {
 		}
 		return largePanel;
 	}
+	/**
+	 * 
+	 * @param article
+	 * @return show all infos about the article, including the title, abstract and author, 
+	 * and a button that allow user to download the pdf 
+	 */
 	public static JPanel createArticlePanel(Article article) {
 		List<Author> authors = DatabaseHandler.getAuthors(article.work.workID);
 		Author corrAuthor = DatabaseHandler.getCorrespondingAuthor(article.work.workID);

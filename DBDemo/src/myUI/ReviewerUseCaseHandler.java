@@ -34,6 +34,15 @@ public class ReviewerUseCaseHandler extends MainFrame {
 		}
 		return reviewerPanel;
 	}
+	/**
+	 * 
+	 * @param reviewerID
+	 * @param work
+	 * @return a panel that show info of the work, and a button to donwload the pdf.
+	 *  a dropdown that allow reviewer to choose verdict.
+	 *  if the work is at first review stage, a text area for review is appeared.
+	 *  if the work is at second review stage, the response is shown.
+	 */
 	public static JPanel createReviewWorkPanel(int reviewerID, Work work) {
 		String oldReview = DatabaseHandler.getReview(reviewerID, work.workID);
 		int oldVerdict = DatabaseHandler.getVerdict(reviewerID, work.workID,1);

@@ -277,7 +277,7 @@ public class EditorUseCaseHandler extends MainFrame {
 	 * @param issn
 	 * @param volume
 	 * @param editor
-	 * @return
+	 * @return a panel that allow editor to add an edition to the selected volume of the selected journal
 	 */
 	public static JPanel addEditionPanel2(int issn, int volume, String editor) {
 		JPanel addEditionPanel = new JPanel();
@@ -311,7 +311,15 @@ public class EditorUseCaseHandler extends MainFrame {
 		addEditionPanel.add(cancelButton);
 		return addEditionPanel;
 	}
-	
+	/**
+	 * 
+	 * @param work the submission to show
+	 * @param issn the journal
+	 * @param email the editor
+	 * @return a panel that show editor info about the submission.
+	 * if the work have received 3 final verdicts and the editor not the same affiliation of any author of the submission,
+	 * the editor can accept or reject it.
+	 */
 	public static JPanel acceptSubmissionPanel(Work work, int issn, String email) {
 		List<Review> reviews = DatabaseHandler.getReviewsAndVerdicts(work.workID);
 		String editorAffiliation = DatabaseHandler.getAffiliation(email);
@@ -407,7 +415,12 @@ public class EditorUseCaseHandler extends MainFrame {
 		return acceptWorkPanel;
 	}
 	
-	
+	/**
+	 * 
+	 * @param user the editor to pass role to
+	 * @param issn the journal
+	 * @return a panel that allow the editor choose which editor to passrole to
+	 */
 	public static JPanel passRolePanel(String user, int issn) {
 		JPanel passrolePanel = new JPanel();
 		passrolePanel.setLayout(new GridLayout(0,1));
@@ -438,7 +451,13 @@ public class EditorUseCaseHandler extends MainFrame {
 		
 		return passrolePanel;
 	}
-	
+	/**
+	 * 
+	 * @param user the editor
+	 * @param issn the journal
+	 * @return a panel that allow chief editor to enter details of a user,
+	 *  register his accoutn and add it to the journal
+	 */
 	public static JPanel createRegisterPage(String user, int issn) {
 		JPanel registerPanel = new JPanel();
 		JPanel signUpPanelField = new JPanel();
