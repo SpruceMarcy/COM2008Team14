@@ -118,7 +118,7 @@ public class MainFrame extends JFrame {
 	 */
 	public static JPanel mainPanel() {
 		JPanel buttonPanel = new JPanel();
-		buttonPanel.setLayout(new GridLayout(5, 1));
+		buttonPanel.setLayout(new GridLayout(0, 1));
 		JButton readerButton = new JButton("READ article");
 		readerButton.addActionListener((event)->{
 			changePanel(ReaderUseCaseHandler.createReadJournalPanel());
@@ -145,6 +145,7 @@ public class MainFrame extends JFrame {
 		buttonPanel.add(jounalButton);
 		buttonPanel.add(submitButton);
 		buttonPanel.add(exitButton);
+		buttonPanel.add(new JLabel("please resize the application if the screen is too small"));
 		return buttonPanel;
 	}
 	

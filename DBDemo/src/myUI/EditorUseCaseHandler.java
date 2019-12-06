@@ -73,10 +73,11 @@ public class EditorUseCaseHandler extends MainFrame {
 			String affiliation = affiliationTF.getText();
 			if(email.equals("")||password.equals("")||title.equals("")||forename.equals("")
 					||surname.equals("")||affiliation.equals("")) {
-				setMessage("please enter all details");
-				return;
+				if(!DatabaseHandler.isAccountExist(email)) {
+					setMessage("please enter all details");
+					return;
+				}
 			}
-			
 			
 			DatabaseHandler.signUp(emailTF.getText(),
 					passwordTF.getText(), titleTF.getText(),
@@ -307,9 +308,12 @@ public class EditorUseCaseHandler extends MainFrame {
 		workDetailPanel.add(new JLabel("edition"));
 		JTextField editionTF = new JTextField();
 		workDetailPanel.add(editionTF);		
-		workDetailPanel.add(new JLabel("page"));
-		JTextField pageTF = new JTextField();
-		workDetailPanel.add(pageTF);		
+		workDetailPanel.add(new JLabel("from page"));
+		JTextField page1TF = new JTextField();
+		workDetailPanel.add(page1TF);	
+		workDetailPanel.add(new JLabel("to page"));
+		JTextField page2TF = new JTextField();
+		workDetailPanel.add(page2TF);			
 		
 		JButton rejectButton = new JButton("reject");
 		rejectButton.addActionListener((event)->{
@@ -320,9 +324,15 @@ public class EditorUseCaseHandler extends MainFrame {
 		JButton acceptButton = new JButton("accept");
 		acceptButton.addActionListener((event)->{
 			try {
+				int pagestart = Integer.parseInt(page1TF.getText());
+				int pageend = Integer.parseInt(page2TF.getText());
+				if(pagestart>pageend) {
+					setMessage("start page cannot be larger than end page");
+					return;
+				}
 				DatabaseHandler.addArticle(issn, Integer.parseInt(volumeTF.getText()),
-						Integer.parseInt(editionTF.getText()),Integer.parseInt(pageTF.getText()),
-						0, work.workID);
+						Integer.parseInt(editionTF.getText()),pagestart,
+						pageend, work.workID);
 				changePanel(manageSubmissionPanel(issn, email));
 				setMessage("a work is accepted");
 			} catch (NumberFormatException e) {
@@ -414,8 +424,10 @@ public class EditorUseCaseHandler extends MainFrame {
 			String affiliation = affiliationTF.getText();
 			if(email.equals("")||password.equals("")||title.equals("")||forename.equals("")
 					||surname.equals("")||affiliation.equals("")) {
-				setMessage("please enter all details");
-				return;
+				if(!DatabaseHandler.isAccountExist(email)) {
+					setMessage("please enter all details");
+					return;
+				}
 			}
 			
 			

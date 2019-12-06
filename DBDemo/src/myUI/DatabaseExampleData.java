@@ -13,15 +13,15 @@ public class DatabaseExampleData {
 	}
 	public static void createEditor() throws Exception {
 
-		DatabaseHandler.signUp("EdGordon","pw","mr","first name","last","uos");
+		DatabaseHandler.signUp("EdGordon","pw","mr","first name","last","uos15151");
 		DatabaseHandler.signUp("EdTomas","pw","mr","first name2","last2","uos");
 		DatabaseHandler.signUp("EdTom","pw","mr","first name2","last2","uos");	
 		DatabaseHandler.signUp("EdSam","pw","mr","first name2","last2","uos");	
 		
 
 		DatabaseHandler.signUp("AuPeter","pw","mr","first name","last","uos123");
-		DatabaseHandler.signUp("AuMary","pw","mr","first name2","last2","uos");
-		DatabaseHandler.signUp("AuJordon","pw","mr","first name2","last2","uos");
+		DatabaseHandler.signUp("AuMary","pw","mr","first name2","last2","uos51");
+		DatabaseHandler.signUp("AuJordon","pw","mr","first name2","last2","uos161");
 		DatabaseHandler.signUp("AuDog","pw","mr","dog","dogg","uos");
 		DatabaseHandler.signUp("AuCat","pw","msr","cat","caatt","uos");
 		DatabaseHandler.signUp("AuTurtle","pw","mr","first name2","last2","uos");

@@ -11,6 +11,11 @@ import javax.swing.JPanel;
 import javax.swing.JTextArea;
 
 public class ReviewerUseCaseHandler extends MainFrame {
+	/**
+	 * 
+	 * @param email
+	 * @return a panel that contains submission the reviewer can review
+	 */
 	public static JPanel createReviewerPanel(String email) {
 		JPanel reviewerPanel = new JPanel();
 		int reviewerID = DatabaseHandler.getReviewerID(email);
@@ -18,6 +23,7 @@ public class ReviewerUseCaseHandler extends MainFrame {
 		reviewerPanel.add(new JLabel("HERE are the submission you can review"));
 		String affiliation = DatabaseHandler.getAffiliation(email);
 		List<Work> reviewList = DatabaseHandler.getWorksReview(affiliation);
+		reviewList.addAll(DatabaseHandler.getWorksReview2(email));
 		for(Work review : reviewList) {
 			System.out.println(review.title);
 			JButton button = new JButton(review.title);

@@ -9,38 +9,72 @@ import java.util.*;
 
 public class DatabaseHandler {
 	public static void main(String[] args) throws Exception{
-
-			try(Connection con = connect()){
-				PreparedStatement pstmt = con.prepareStatement(
-						"SELECT wk2.workID, wk2.subID, wk2.title, wk2.abst, wk2.pdf FROM"
-						+ ""
-						+ "(SELECT work.workID workID,submission.submissionID subID,submission.title title,"
-						+ "submission.abstract abst,submission.pdf pdf FROM work LEFT JOIN article ON work.workID=article.workID"
-						+ ",submission INNER JOIN ("
-						+ "SELECT workID,MAX(submissionID) submissionID FROM submission GROUP BY workID"
-						+ ") sub ON submission.submissionID=sub.submissionID AND submission.workID=sub.workID "
-						+ "WHERE work.workID=submission.workID "
-						+ "AND article.workID IS NULL) wk2 "
-						+ "WHERE wk2.workID NOT IN "
-						+ "(SELECT DISTINCT(work.workID) FROM work, authoring, account "
-						+ "WHERE work.workID=authoring.workID AND authoring.email=account.email "
-						+ "AND account.affiliation=?)"
-						);
-			pstmt.setString(1, "uos");
+//		try(Connection con=connect()){
+//			PreparedStatement pstmt = con.prepareStatement(""
+//					+ "SELECT submission.workID workID,title FROM submission,verdict "
+//					+ "WHERE submission.submissionID=verdict.submissionID AND "
+//					+ "submission.workID=verdict.workID AND "
+//					+ "submission.submissionID=1 "
+//					+ "GROUP BY submission.workID "
+//					+ "HAVING COUNT(verdict.workID)=3"
+//					+ ""
+//					+ "");
+//			ResultSet res = pstmt.executeQuery();
+//			List<Work> works = new ArrayList<Work>();
+//			while(res.next()) {
+//				String title = res.getString(2);
+//				System.out.println(title);
+//			}
+//			res.close();
+//		}
+//		if(true)return;
+		
+		try(Connection con = connect()){
+//			PreparedStatement pstmt = con.prepareStatement(
+//					"SELECT wk2.workID, wk2.subID, wk2.title, wk2.abst, wk2.pdf FROM"
+//					+ ""
+//					+ "(SELECT work.workID workID,submission.submissionID subID,submission.title title,"
+//					+ "submission.abstract abst,submission.pdf pdf FROM work LEFT JOIN article ON work.workID=article.workID"
+//					+ ",submission INNER JOIN ("
+//					+ "SELECT workID,MAX(submissionID) submissionID FROM submission GROUP BY workID"
+//					+ ") sub ON submission.submissionID=sub.submissionID AND submission.workID=sub.workID "
+//					+ "WHERE work.workID=submission.workID "
+//					+ "AND article.workID IS NULL) wk2 "
+//					+ "WHERE wk2.workID NOT IN "
+//					+ "(SELECT DISTINCT(work.workID) FROM work, authoring, account "
+//					+ "WHERE work.workID=authoring.workID AND authoring.email=account.email "
+//					+ "AND account.affiliation=?)"
+//					);
+			PreparedStatement pstmt = con.prepareStatement(""
+					+ "SELECT workID,submissionID,title,abstract,pdf FROM submission "
+					+ "WHERE submission.submissionID=1 AND workID NOT IN"
+					+ "(SELECT DISTINCT(work.workID) FROM work, authoring, account "
+					+ "WHERE work.workID=authoring.workID AND authoring.email=account.email "
+					+ "AND account.affiliation=?) "
+					+ "AND workID NOT IN"
+					+ "(SELECT submission.workID workID FROM submission,verdict "
+					+ "WHERE submission.submissionID=verdict.submissionID AND "
+					+ "submission.workID=verdict.workID AND "
+					+ "submission.submissionID=1 "
+					+ "GROUP BY submission.workID "
+					+ "HAVING COUNT(verdict.workID)=3"
+					+ ")"
+					+ "");
+			pstmt.setString(1, "asd");
 			ResultSet res = pstmt.executeQuery();
 			List<Work> works = new ArrayList<Work>();
 			while(res.next()) {
-//				int workID = res.getInt(1);
-//				int submissionID = res.getInt(2);
-//				String title = res.getString(3);
-//				String _abstract = res.getString(4);
-//				byte[] fileBytes = res.getBytes(5);
-//				works.add(new Work(workID, title, _abstract, fileBytes, submissionID));
-				System.out.println(res.getString(1));
+				int workID = res.getInt(1);
+				int submissionID = res.getInt(2);
+				String title = res.getString(3);
+				String _abstract = res.getString(4);
+				byte[] fileBytes = res.getBytes(5);
+				System.out.println(title);
+				works.add(new Work(workID, title, _abstract, fileBytes, submissionID));
 			}
-			System.out.println("end");
 			res.close();
 		}
+
 	}
 	public static void showUsers() throws Exception {
 		try(Connection con = connect()){
@@ -842,9 +876,13 @@ public class DatabaseHandler {
 			PreparedStatement pstmt = con.prepareStatement(
 					 "SELECT work.workID,issn,submission.submissionID,submission.title,"
 					 + "submission.abstract,submission.pdf FROM work "
-					 + ",submission,authoring WHERE work.workID=submission.workID"
-					 + " AND authoring.workID=work.workID AND authoring.email=?"
+					 + ",submission"
+					 + ",authoring WHERE work.workID=submission.workID"
+					 + " AND authoring.workID=work.workID AND authoring.email=? "
+					 + "AND submission.workID NOT IN (SELECT workID FROM submission WHERE submissionID=2)"
 					 + " GROUP BY work.workID");
+			
+
 			pstmt.setString(1, email);
 			ResultSet res = pstmt.executeQuery();
 			List<Work> works = new ArrayList<Work>();
@@ -854,7 +892,8 @@ public class DatabaseHandler {
 				int submissionID = res.getInt(3);
 				String title = res.getString(4);
 				String _abstract = res.getString(5);
-				byte[] fileBytes = res.getBytes(6);			
+				byte[] fileBytes = res.getBytes(6);
+				System.out.println(submissionID);
 				works.add(new Work(workID, title, _abstract, fileBytes, submissionID));
 
 			}
@@ -865,23 +904,78 @@ public class DatabaseHandler {
 		}
 		return new ArrayList<Work>();
 	}
-	public static List<Work> getWorksReview(String affiliation) {
+	/**
+	 * 
+	 * @param email
+	 * @return list of works where you have done initial reviews and user can do the final review
+	 */
+	public static List<Work> getWorksReview2(String email){
 		try(Connection con = connect()){
 			PreparedStatement pstmt = con.prepareStatement(
-					"SELECT wk2.workID, wk2.subID, wk2.title, wk2.abst, wk2.pdf FROM"
-					+ ""
-					+ "(SELECT work.workID workID,submission.submissionID subID,submission.title title,"
-					+ "submission.abstract abst,submission.pdf pdf FROM work LEFT JOIN article ON work.workID=article.workID"
-					+ ",submission INNER JOIN ("
-					+ "SELECT workID,MAX(submissionID) submissionID FROM submission GROUP BY workID"
-					+ ") sub ON submission.submissionID=sub.submissionID AND submission.workID=sub.workID "
-					+ "WHERE work.workID=submission.workID "
-					+ "AND article.workID IS NULL) wk2 "
-					+ "WHERE wk2.workID NOT IN "
+					"SELECT submission.workID, submission.submissionID, title,abstract,pdf "
+					+ "FROM submission LEFT JOIN article ON submission.workID=article.workID "
+					+ "WHERE submission.submissionID=2 "
+					+ "AND submission.workID IN ("
+					+ "SELECT submission.workID FROM submission,review,reviewer "
+					+ "WHERE submission.submissionID=1 "
+					+ "AND submission.submissionID=review.submissionID "
+					+ "AND submission.workID=review.workID "
+					+ "AND review.reviewerID=reviewer.reviewerID "
+					+ "AND reviewer.email=?) "
+					+ "AND article.workID IS NULL"
+					+ "");
+			pstmt.setString(1, email);
+			ResultSet res = pstmt.executeQuery();
+			List<Work> works = new ArrayList<Work>();
+			while(res.next()) {
+				int workID = res.getInt(1);
+				int submissionID = res.getInt(2);
+				String title = res.getString(3);
+				String _abstract = res.getString(4);
+				byte[] fileBytes = res.getBytes(5);
+				works.add(new Work(workID, title, _abstract, fileBytes, submissionID));
+			}
+			res.close();
+			return works;
+		}
+		catch(Exception e) {
+			System.out.println(e);
+		}
+		return null;
+	}
+	
+	public static List<Work> getWorksReview(String affiliation) {
+		try(Connection con = connect()){
+//			PreparedStatement pstmt = con.prepareStatement(
+//					"SELECT wk2.workID, wk2.subID, wk2.title, wk2.abst, wk2.pdf FROM"
+//					+ ""
+//					+ "(SELECT work.workID workID,submission.submissionID subID,submission.title title,"
+//					+ "submission.abstract abst,submission.pdf pdf FROM work LEFT JOIN article ON work.workID=article.workID"
+//					+ ",submission INNER JOIN ("
+//					+ "SELECT workID,MAX(submissionID) submissionID FROM submission GROUP BY workID"
+//					+ ") sub ON submission.submissionID=sub.submissionID AND submission.workID=sub.workID "
+//					+ "WHERE work.workID=submission.workID "
+//					+ "AND article.workID IS NULL) wk2 "
+//					+ "WHERE wk2.workID NOT IN "
+//					+ "(SELECT DISTINCT(work.workID) FROM work, authoring, account "
+//					+ "WHERE work.workID=authoring.workID AND authoring.email=account.email "
+//					+ "AND account.affiliation=?)"
+//					);
+			PreparedStatement pstmt = con.prepareStatement(""
+					+ "SELECT workID,submissionID,title,abstract,pdf FROM submission "
+					+ "WHERE submission.submissionID=1 AND workID NOT IN"
 					+ "(SELECT DISTINCT(work.workID) FROM work, authoring, account "
 					+ "WHERE work.workID=authoring.workID AND authoring.email=account.email "
-					+ "AND account.affiliation=?)"
-					);
+					+ "AND account.affiliation=?) "
+					+ "AND workID NOT IN"
+					+ "(SELECT submission.workID workID FROM submission,verdict "
+					+ "WHERE submission.submissionID=verdict.submissionID AND "
+					+ "submission.workID=verdict.workID AND "
+					+ "submission.submissionID=1 "
+					+ "GROUP BY submission.workID "
+					+ "HAVING COUNT(verdict.workID)=3"
+					+ ")"
+					+ "");
 			pstmt.setString(1, affiliation);
 			ResultSet res = pstmt.executeQuery();
 			List<Work> works = new ArrayList<Work>();
@@ -892,7 +986,6 @@ public class DatabaseHandler {
 				String _abstract = res.getString(4);
 				byte[] fileBytes = res.getBytes(5);
 				works.add(new Work(workID, title, _abstract, fileBytes, submissionID));
-
 			}
 			res.close();
 			return works;
@@ -1122,6 +1215,22 @@ public class DatabaseHandler {
 			System.out.println(e);
 		}
 	}
-	
+
+	public static boolean isAccountExist(String email) {
+		try(Connection con = connect()){
+			PreparedStatement pstmt = con.prepareStatement(
+					"SELECT email FROM account WHERE email=?");
+			pstmt.setString(1, email);
+			ResultSet res = pstmt.executeQuery();
+			while(res.next()) {
+				res.close();
+				return true;
+			}
+			res.close();
+		} catch (Exception e) {
+			System.out.println(e);
+		}
+		return false;
+	}
 	
 }

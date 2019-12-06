@@ -113,8 +113,10 @@ public class AuthorUseCaseHandler extends MainFrame  {
 			String affiliation = affiliationTF.getText();
 			if(email.equals("")||password.equals("")||title.equals("")||forename.equals("")
 					||surname.equals("")||affiliation.equals("")) {
-				setMessage("please enter all details");
-				return;
+				if(!DatabaseHandler.isAccountExist(email)) {
+					setMessage("please enter all details");
+					return;
+				}
 			}
 			
 			Author newAuthor = new Author(titleTF.getText(),
@@ -138,8 +140,10 @@ public class AuthorUseCaseHandler extends MainFrame  {
 			String affiliation = affiliationTF.getText();
 			if(email.equals("")||password.equals("")||title.equals("")||forename.equals("")
 					||surname.equals("")||affiliation.equals("")) {
-				setMessage("please enter all details");
-				return;
+				if(!DatabaseHandler.isAccountExist(email)) {
+					setMessage("please enter all details");
+					return;
+				}
 			}
 			Author newAuthor = new Author(titleTF.getText(),
 					forenameTF.getText(),surnameTF.getText(),
