@@ -301,7 +301,6 @@ public class AuthorUseCaseHandler extends MainFrame  {
 		else reviewTextPanel.add(new JLabel(work._abstract));
 		
 		pdf = null;
-		reviewTextPanel.add(new JLabel("pdf:"));
 		JButton uploadButton = new JButton("choose from your desktop");
 		uploadButton.addActionListener((event)->{
 			JFileChooser pdfFC = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
@@ -313,7 +312,13 @@ public class AuthorUseCaseHandler extends MainFrame  {
 				pdf = selectedFile;
 			}
 		});
-		reviewTextPanel.add(uploadButton);
+		if(reviews.size()>=3) {
+			reviewTextPanel.add(new JLabel("pdf:"));
+			reviewTextPanel.add(uploadButton);
+		}else {
+			reviewTextPanel.add(new JLabel("resummit pdf:"));
+			reviewTextPanel.add(downloadButton(work));
+		}
 		for(Review review:reviews) {
 			reviewTextPanel.add(new JLabel("verdict"+review.reviewID+" :"));
 			reviewTextPanel.add(new JLabel(verdictIDtoVerdict(review.verdict)));
